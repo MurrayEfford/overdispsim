@@ -6,6 +6,6 @@
 .onAttach <- function (libname, pkgname) {
     version <- paste0(packageVersion('overdispsim'), "")
     packageStartupMessage("This is overdispsim ", version,
-                           ". For overview type vignette('Overview', 'overdispsim')")
+                           ". For overview type vignette('overdispsim-vignette', 'overdispsim')")
     setlocalparameters()
 }

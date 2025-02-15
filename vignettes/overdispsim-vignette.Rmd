@@ -6,6 +6,9 @@ output:
   html_document: 
     toc: yes
     toc_depth: 2
+  pdf_document: 
+    toc: yes
+    toc_depth: 2
 vignette: > 
   %\VignetteIndexEntry{Simulations of Overdispersion in SECR} 
   %\VignetteEngine{knitr::rmarkdown} 
@@ -181,7 +184,7 @@ sumn[,1:10]
 ## Model fit
 
 Using the same population scenarios -
-```{r example2, message = FALSE, cache = TRUE, warning = FALSE}
+```{r example2, message = FALSE, cache = TRUE, warning = FALSE, eval = TRUE}
 simsM <- run_all(nrepl = 10, pops, fit = TRUE)  
 summary_M(simsM)                     
 ```
@@ -252,39 +255,15 @@ sims2fM <- run_all(nreplM, popargs2f[7:12], fit = TRUE, distribution = "binomial
 
 Simulation results have been archived on Zenodo (Efford 2025). We retrieve them with the R package **zen4R** (Blondel 2024).
 
-```{r zenodo, eval = TRUE, echo = TRUE}
-require(zen4R)
+```{r zenodo, eval = TRUE, echo = TRUE, message=FALSE, warning=FALSE}
+library(zen4R)
 tmpfolder <- tempdir()
-on.exit(unlink(tmpfolder, recursive = TRUE))
 download_zenodo("10.5281/zenodo.14873670", path = tmpfolder, quiet = TRUE)
-```
-
-Next code chunk loads each set of simulations, restoring the objects that were 
-created (offline) by running preceding chunks.
-
-```{r load, eval = TRUE, echo = TRUE}
-tmpfolder <- paste0(tmpfolder, '/')
-load(file = paste0(tmpfolder, 'sims1.RData'))
-load(file = paste0(tmpfolder, 'sims2.RData'))
-load(file = paste0(tmpfolder, 'sims3.RData'))
-
-load(file = paste0(tmpfolder, 'sims1f.RData'))
-load(file = paste0(tmpfolder, 'sims2f.RData'))
-load(file = paste0(tmpfolder, 'sims3f.RData'))
-
-load(file = paste0(tmpfolder, 'sims1M.RData'))
-load(file = paste0(tmpfolder, 'sims2M.RData'))
-load(file = paste0(tmpfolder, 'sims3M.RData'))
-load(file = paste0(tmpfolder, 'sims1fM.RData'))
-load(file = paste0(tmpfolder, 'sims2fM.RData'))
-load(file = paste0(tmpfolder, 'sims3fM.RData'))
-
-load(file = paste0(tmpfolder, 'sims1MCL.RData'))
-load(file = paste0(tmpfolder, 'sims2MCL.RData'))
-load(file = paste0(tmpfolder, 'sims3MCL.RData'))
-
-load(file = paste0(tmpfolder, 'sims2CCL.RData'))   # cohesion
-load(file = paste0(tmpfolder, 'sims2CfCL.RData'))  # cohesion, fixed N(A)
+files <- list.files(path = tmpfolder, full.names = TRUE)
+files <- files[grepl('.rdata', tolower(files))]
+reloaded <- unlist(lapply(files, load))
+print(reloaded)
+unlink(tmpfolder, recursive = TRUE)
 ```
 
 Now summarise the simulations
