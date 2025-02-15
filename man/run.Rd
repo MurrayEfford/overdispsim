@@ -5,40 +5,47 @@
 
 \description{
 
-A wrapper for run.scenarios.
+A wrapper for \pkg{secrdesign} function \code{run.scenarios()}.
 
 }
 
 \usage{
 run_all(nrepl, popargs, CH.function = "sim.capthist", detargs = list(savepopn = TRUE), 
-    fit = FALSE, distribution = c("poisson", "binomial"), CL = FALSE, ncores = 18, 
+    fit = FALSE, distribution = c("poisson", "binomial"), CL = FALSE, 
     start = NULL, byscenario = FALSE, extractfn    = NULL, seed = 12345, ...)
 }
 
 \arguments{
-  \item{nrepl}{}
-  \item{popargs}{}
-  \item{CH.function}{}
-  \item{detargs}{}
-  \item{fit}{logical}
-  \item{distribution}{}
+  \item{nrepl}{integer number of replicates}
+  \item{popargs}{list of named arguments to
+  \code{\link[secr]{sim.popn}}}
+  \item{CH.function}{character name of function to simulate capthist}
+  \item{detargs}{list of named arguments to
+  \code{\link[secr]{sim.capthist}}}
+  \item{fit}{logical; model fitted if TRUE}
+  \item{distribution}{character distribution of n in fitted model ("poisson" or "binomial")}
   \item{CL}{logical; if TRUE fitting maximises the conditional likelihood}
-  \item{ncores}{}
-  \item{start}{}
-  \item{byscenario}{}
-  \item{extractfn}{}
-  \item{seed}{}
+  \item{start}{'start' argument for secr.fit}
+  \item{byscenario}{logical (see secrdesign)}
+  \item{extractfn}{function to extract statistics from each replicate}
+  \item{seed}{integer random seed}
   \item{\dots}{additional arguments for extractfn}
 }
 
 \details{
+
+Arguments generally follow \code{\link[secrdesign]{run.scenarios}}.
+
 }
 
 \value{
+
+See \code{\link[secrdesign]{run.scenarios}}. Depends on extractfn.
+
 }
 
 \seealso{
-}
 
-\examples{
+\code{\link{extractfn}}
+
 }

@@ -11,7 +11,7 @@ Several variables are used by multiple functions and it is tidier to store them 
 
 \usage{
 
-setlocalparameters(lambda0 = 0.5, sigma = 1, noccasions = 5, 
+setlocalparameters(lambda0 = 0.5, sigma = 1, detectfn = 'HHN', noccasions = 5, 
     traps = make.grid(12, 12, detector = "proximity", spacing = 2), 
     maskspacing = 0.5, maskbuffer = 4, N = 256, maxncores = 18)
 }
@@ -19,6 +19,7 @@ setlocalparameters(lambda0 = 0.5, sigma = 1, noccasions = 5,
 \arguments{
   \item{lambda0}{numeric detection parameter}
   \item{sigma}{numeric detection parameter}
+  \item{detectfn}{secr \code{\link[secr]{detectfn}} code}
   \item{noccasions}{integer}
   \item{traps}{secr traps object}
   \item{maskspacing}{numeric spacing of generated mask}
@@ -40,15 +41,15 @@ A mask is generated. The derived variables `detectpar`, `D`, `pd` and `enk` are 
 Invisibly returns the environment as a list with components -
 \item{lambda0 }{}
 \item{sigma }{}
-\item{detectpar }{}
-\item{noccasions }{}
-\item{N }{}
+\item{pd }{}
 \item{D }{}
 \item{traps }{}
+\item{detectpar }{}
+\item{N }{}
 \item{mask }{}
-\item{pd }{}
-\item{enk }{}
 \item{maxncores }{}
+\item{noccasions }{}
+\item{enk }{}
 
 }
 

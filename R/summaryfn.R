@@ -70,7 +70,7 @@ summary_M <- function (sims, true = NULL) {
 			true <- lapply(outlist, sapply, '[[', 'trueD')
 		}
 		else {
-			true <- N/maskarea(.local$mask)
+			true <- .local$N/maskarea(.local$mask)
 		}
 	}
 	sim  <- mapply(getD, outlist, true, MoreArgs=list(Dfield='pred'), SIMPLIFY=FALSE) 

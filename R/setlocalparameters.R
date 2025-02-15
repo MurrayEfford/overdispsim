@@ -1,6 +1,7 @@
 setlocalparameters <- function (
 		lambda0 = 0.5,
 		sigma = 1.0,
+		detectfn = 'HHN',
 		noccasions = 5,
 		traps = make.grid(12,12, detector = 'proximity', spacing = 2.0),
 		maskspacing = 0.5,
@@ -13,6 +14,7 @@ setlocalparameters <- function (
 	
 	.local$lambda0 <- lambda0
 	.local$sigma  <- sigma
+	.local$detectfn <- detectfn
 	.local$detectpar <- list(lambda0 = lambda0, sigma = sigma)
 	.local$traps <- traps
 	.local$mask <- mask
@@ -21,12 +23,12 @@ setlocalparameters <- function (
 	.local$noccasions <- noccasions
 	.local$maxncores <- maxncores
 	
-	# expected variance of binomial n
-	.local$pd <- secr::pdot(mask, traps, detectfn = 'HHN', detectpar = 
+	# probability of detection at each mask point
+	.local$pd <- secr::pdot(mask, traps, detectfn = detectfn, detectpar = 
 					  	.local$detectpar, noccasions = noccasions)
 	# expected number of individuals at each detector
 	.local$enk <- secr::Enk(D = .local$D, 
-					  mask, traps, detectfn = 'HHN',
+					  mask, traps, detectfn = detectfn,
 					  detectpar = .local$detectpar, 
 					  noccasions = .local$noccasions)
 	invisible(as.list(.local))

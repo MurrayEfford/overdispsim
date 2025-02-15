@@ -3,11 +3,13 @@
 # extractfn. R
 ################################################################################
 
+# ASSUMES environment 'local' is in workspace
+
 extract_n <- function (ch, distribution = "poisson") {
 	pop <- attr(ch, "popn")
 	Lambda <- covariates(attr(pop, 'Lambda'))$Lambda
 	if (!is.null(Lambda)) {
-		# ASSUMES pd GLOBAL FOR LAMBDA MASK
+		# ASSUMES pd applies unchanged when Lambda is a mask
 		localD <- sum(.local$pd * Lambda) / sum(.local$pd)
 	}
 	else {
@@ -16,7 +18,7 @@ extract_n <- function (ch, distribution = "poisson") {
 		# dodge fast proximity collapse to 1 occasion
 		usage(tr) <- NULL
 		if (distribution == 'binomial') {
-			a <- sum(pd) * attr(.local$mask, 'area')
+			a <- sum(.local$pd) * attr(.local$mask, 'area')
 			localD <- sum(pdot(pop, tr, 
 							   detectpar = .local$detectpar, 
 							   detectfn = 'HHN', noccasions = .local$noccasions)) / a
@@ -49,26 +51,26 @@ extract_M <- function (fit, chatmin = 1) {
 		pop <- attr(fit$capthist, "popn")
 		Lambda <- covariates(attr(pop, 'Lambda'))$Lambda
 		if (!is.null(Lambda)) {
-			# ASSUMES pd GLOBAL FOR LAMBDA MASK
-			trueD <- sum(pd * Lambda) / sum(pd)
+			# ASSUMES pd applies unchanged when Lambda is a mask
+			trueD <- sum(.local$pd * Lambda) / sum(.local$pd)
 		}
 		else {
 			tr <- traps(fit$capthist)
 			# dodge fast proximity collapse to 1 occasion
 			usage(tr) <- NULL
 			if (fit$details$distribution == 'binomial') {
-				a <- sum(pd) * attr(fit$mask, 'area')
+				a <- sum(.local$pd) * attr(fit$mask, 'area')
 				trueD <- sum(pdot(pop, tr, 
-								  detectpar = local$detectpar, 
-								  detectfn = 'HHN', noccasions = noccasions)) / a
+								  detectpar = .local$detectpar, 
+								  detectfn = 'HHN', noccasions = .local$noccasions)) / a
 			}
 			else {
 				msk <-attr(pop, 'mask')
 				maskD <- covariates(msk)$D
 				if (!is.null(maskD)) {  # saved randomDensity
 					pd <- pdot(msk, tr, detectfn = 'HHN', 
-							   detectpar = local$detectpar, 
-							   noccasions = local$noccasions)
+							   detectpar = .local$detectpar, 
+							   noccasions = .local$noccasions)
 					trueD <- sum(pd * maskD) / sum(pd)
 				}
 				else {
@@ -97,10 +99,10 @@ extract_MCL <- function (fit) {
 		pop <- attr(fit$capthist, "popn")
 		Lambda <- covariates(attr(pop, 'Lambda'))$Lambda
 		if (!is.null(Lambda)) {
-			trueD <- sum(pd * Lambda) / sum(pd)
+			trueD <- sum(.local$pd * Lambda) / sum(.local$pd)
 		}
 		else {
-			trueD <- sum(pd * covariates(attr(pop, 'mask'))$D) / sum(pd)
+			trueD <- sum(.local$pd * covariates(attr(pop, 'mask'))$D) / sum(.local$pd)
 		}
 		N <- nrow(pop)
 		n <- nrow(fit$capthist)

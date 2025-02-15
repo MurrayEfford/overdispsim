@@ -33,8 +33,13 @@ run_all <- function (
 		start    = start,   
 		details  = list(distribution = distribution))
 	if (is.null(extractfn)) {
-		extractfn <- if (fit) {if (CL) extract_MCL else extract_M} 
-	             else extract_n
+		extractfn <- if (fit) {
+			if (CL) 
+				extract_MCL 
+			else 
+				extract_M
+		} 
+		else extract_n
 	}
 	run.scenarios(
 		nrepl       = nrepl, 

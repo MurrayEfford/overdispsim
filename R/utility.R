@@ -1,4 +1,5 @@
 # see also setlocalparameters()
+# environment is populated by onAttach()
 .local <- new.env(parent = emptyenv())
 
 resetchatmin <- function (sims, chatmin) {

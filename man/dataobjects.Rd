@@ -23,6 +23,9 @@
 \alias{sum2MCL}
 \alias{sum3MCL}
 
+\alias{sum2CCL}
+\alias{sum2CfCL}
+
 \title{ Data Objects }
 
 \description{
@@ -53,11 +56,8 @@ sum1MCL
 sum2MCL
 sum3MCL
 
-}
-
-\details{
-
-\tabular{ll}{}
+sum2CCL
+sum2CfCL
 
 }
 
@@ -66,11 +66,3 @@ sum3MCL
 \link{summary}
 
 }
-
-\examples{
-
-sum1M
-}
-
-\keyword{datasets}
-

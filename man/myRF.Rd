@@ -42,7 +42,3 @@ fixed \tab TRUE \tab conditional? \cr
 Vector of cell-specific densities.
 
 }
-
-\examples{
-
-}

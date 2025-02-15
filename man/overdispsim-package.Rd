@@ -29,4 +29,6 @@ Type \code{vignette('Overview', 'overdispsim')} to see the overview vignette.
 
 \seealso{
 
+\code{\link{run_all}}
+
 }

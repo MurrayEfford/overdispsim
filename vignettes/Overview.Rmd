@@ -31,7 +31,7 @@ with both `rLGCP` and `spatstat`.
 
 ```{r setup}
 library(overdispsim, quietly = TRUE)
-options(digits = 5)
+options(digits = 6)
 
 # Assign variables to an environment that is available to other 
 # functions in the package. 
@@ -39,6 +39,7 @@ options(digits = 5)
 local <- setlocalparameters(
 	lambda0     = 0.5,
 	sigma       = 1.0,
+	detectfn    = 'HHN',
 	noccasions  = 5,
 	traps       = make.grid(12,12, detector = 'proximity', spacing = 2.0),
 	maskspacing = 0.5,
@@ -53,17 +54,15 @@ local <- setlocalparameters(
 ```{r derived}
 
 # expected variance of binomial n
-pd <- pdot(local$mask, local$traps, detectfn = 'HHN', 
- 		   detectpar = local$detectpar, noccasions = local$noccasions)
-a <- sum(pd * attr(local$mask, 'area'))
+a <- sum(local$pd * attr(local$mask, 'area'))
 p <- a / maskarea(local$mask)
 Evarn <- p * (1-p) * local$N
 
 # expected number of individuals detected
-En <- sum(pd) * attr(local$mask, 'area') * local$D
+En <- sum(local$pd) * attr(local$mask, 'area') * local$D
 
 # expected number of individuals at each detector
-enk <- Enk(D = local$D, local$mask, local$traps, detectfn = 'HHN',
+enk <- Enk(D = local$D, local$mask, local$traps, detectfn = local$detectfn,
 		   detectpar = local$detectpar, noccasions = local$noccasions)
 ```
 
@@ -106,7 +105,7 @@ basepopargs3 <- list(D = randomDensity,
 					 core = local$mask,
 					 buffer = 0,
 					 model2D = "IHP",
-					 details = list(D = D, p=0.5, A=0.25, rescale=TRUE))
+					 details = list(D = local$D, p=0.5, A=0.25, rescale=TRUE))
 popargs3 <- extend(basepopargs3, values = list(A = Alevels, p = c(0.25, 0.5)) )
 ```
 

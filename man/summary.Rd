@@ -7,7 +7,7 @@
 
 \description{
 
-Custom summary functions for output from \code{\link{run}}.
+Custom summary functions for output from \code{\link{run_all}}.
 
 }
 
@@ -28,12 +28,6 @@ summary_MCL(sims, true = NULL, truea = 0.0635256)
 
 }
 
-\details{
-
-To follow
-
-}
-
 \value{
 
 Table with one row per scenario.
@@ -42,7 +36,7 @@ Table with one row per scenario.
 
 \seealso{
 
-\code{\link{run}}
+\code{\link{run_all}}
 
 }
 
