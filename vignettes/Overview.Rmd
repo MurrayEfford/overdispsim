@@ -15,7 +15,7 @@ vignette: >
 # Introduction
 
 This vignette explains the functions in the package **overdispsim** and 
-provides code for simulations in the paper of Efford and Fletcher (2023). 
+provides code for simulations in the paper of Efford and Fletcher (2024). 
 
 **overdispsim** uses the R packages **secr** (Efford 2023a) and 
 **secrdesign** (Efford 2023b) available from the CRAN repository. 
