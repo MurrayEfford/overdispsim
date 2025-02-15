@@ -14,7 +14,7 @@ vignette: >
 
 # Introduction
 
-This vignette explains the functions in the package **overdispsim** and 
+This vignette explains some of the functions in the package **overdispsim** and 
 provides code for simulations in the paper of Efford and Fletcher (2024). 
 
 **overdispsim** uses the R packages **secr** (Efford 2023a) and 
@@ -247,24 +247,22 @@ sims1fM <- run_all(nreplM, popargs1f[7:12], fit = TRUE, distribution = "binomial
 sims3fM <- run_all(nreplM, popargs3f[7:12], fit = TRUE, distribution = "binomial")
 sims2fM <- run_all(nreplM, popargs2f[7:12], fit = TRUE, distribution = "binomial")
 ```
+
 ## Summaries
 
-```{r load, eval = TRUE, echo = FALSE}
-# Simulation results have been archived as 
+Simulation results have been archived on Zenodo (Efford 2025). We retrieve them with the R package **zen4R** (Blondel 2024).
 
-# Efford MG (2025) Simulations of overdispersed activity centres in 
-# spatially explicit capture-recapture [Data set]. Zenodo. 
-# <https://doi.org/10.5281/zenodo.14873670>
-
-# We retrieve them with the R package zen4R
-# Blondel E (2024) _zen4R: Interface to 'Zenodo' REST API_. R package version
-#   0.10, <https://CRAN.R-project.org/package=zen4R>
-  
+```{r zenodo, eval = TRUE, echo = TRUE}
 require(zen4R)
 tmpfolder <- tempdir()
 on.exit(unlink(tmpfolder, recursive = TRUE))
-download_zenodo(path = tmpfolder, "10.5281/zenodo.14873670")
+download_zenodo("10.5281/zenodo.14873670", path = tmpfolder, quiet = TRUE)
+```
 
+Next code chunk loads each set of simulations, restoring the objects that were 
+created (offline) by running preceding chunks.
+
+```{r load, eval = TRUE, echo = TRUE}
 tmpfolder <- paste0(tmpfolder, '/')
 load(file = paste0(tmpfolder, 'sims1.RData'))
 load(file = paste0(tmpfolder, 'sims2.RData'))
@@ -288,6 +286,8 @@ load(file = paste0(tmpfolder, 'sims3MCL.RData'))
 load(file = paste0(tmpfolder, 'sims2CCL.RData'))   # cohesion
 load(file = paste0(tmpfolder, 'sims2CfCL.RData'))  # cohesion, fixed N(A)
 ```
+
+Now summarise the simulations
 
 ```{r summaryM, eval = TRUE}
 
@@ -316,7 +316,7 @@ sum3MCL <- summary_MCL(sims3MCL, true = 2844.44)
 ```
 
 ```{r savesummary, echo = FALSE, eval = FALSE}
-# save summaries to data folder
+# summaries were previously saved to data folder with this code
 
 # no fit
 save(sum1, file = 'data/sum1.RData')
@@ -344,6 +344,8 @@ save(sum2MCL, file = 'data/sum2MCL.RData')
 save(sum3MCL, file = 'data/sum3MCL.RData')
 
 ```
+
+...and output to .csv.
 
 ```{r csv, eval = FALSE, echo = FALSE}
 write.csv(sum1M, file='extra/sum1M.csv')
@@ -400,6 +402,9 @@ Baddeley, A., Rubak, E., and Turner, R. (2015) *Spatial Point Patterns: Methodol
 
 Bischof, R., Dupont, P., Milleret, C., Chipperfield, J., and Royle, J. A. (2020) Consequences of ignoring group association in spatial capture--recapture analysis. *Wildlife Biology* wlb.00649. DOI 10.2981/wlb.00649
 
+Blondel, E. (2024) zen4R: Interface to 'Zenodo' REST API. R package version
+  0.10. https://CRAN.R-project.org/package=zen4R/
+
 Borchers, D. L. and Efford, M. G. (2008) Spatially explicit maximum likelihood methods for capture--recapture studies. *Biometrics* **64**, 377--385.
 
 Efford, M. G. (2023a) secr: Spatially explicit capture--recapture models. R package version
@@ -408,7 +413,9 @@ Efford, M. G. (2023a) secr: Spatially explicit capture--recapture models. R pack
 Efford, M. G. (2023b) openCR: Spatially explicit capture--recapture models. R package version
   2.2.6. https://CRAN.R-project.org/package=openCR/
 
-Efford, M. G. and Fletcher, D. (2024)  The effect of spatial overdispersion on confidence intervals for population density estimated by spatially explicit capture--recapture. bioRxiv DOI: 10.1101/2024.03.12.584742. 
+Efford, M. G. (2025) Simulations of overdispersed activity centres in spatially explicit capture-recapture [Data set]. Zenodo. https://doi.org/10.5281/zenodo.14873670
+
+Efford, M. G. and Fletcher, D. (2024)  The effect of spatial overdispersion on confidence intervals for population density estimated by spatially explicit capture--recapture. bioRxiv https://doi.org/10.1101/2024.03.12.584742. 
 
 Saura, S., and Martínez-Millán, J. (2000) Landscape patterns simulation with a modified random clusters method. *Landscape Ecology* **15**, 661--678.
 
