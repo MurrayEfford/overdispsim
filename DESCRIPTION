@@ -16,3 +16,5 @@ Suggests: knitr, rmarkdown, RandomFields
 VignetteBuilder: knitr
 License: GPL (>= 2)
 Lazydata: yes
+URL: https://github.com/MurrayEfford/overdispsim
+BugReports: https://github.com/MurrayEfford/overdispsim/issues
