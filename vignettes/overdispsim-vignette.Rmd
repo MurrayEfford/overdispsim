@@ -39,7 +39,7 @@ with both `rLGCP` and `spatstat`.
 library(overdispsim, quietly = TRUE)
 options(digits = 6)
 runsimulations <- FALSE   # set TRUE to run afresh
-runexamples <- FALSE
+runexamples <- TRUE
 ```
 
 We next set some options by assigning variables to an environment ('.local') that is 
