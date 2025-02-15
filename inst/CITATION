@@ -1,0 +1,17 @@
+citHeader("To cite package 'overdispsim' in publications use:")
+
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
+vers <- paste("R package version", meta$Version)
+
+bibentry(
+    bibtype = "Manual",
+    title   = "overdispsim: Simulations of Overdispersion in SECR",
+    author  = c(person("Murray", "Efford"), person("David", "Fletcher")),
+    year    = year,
+    note    = vers,
+    textVersion =
+        paste("Efford, M. G. and Fletcher, D. (", year,
+        "). overdispsim: Simulations of Overdispersion in SECR. ",
+        vers, ". ", 
+        sep = "")
+)

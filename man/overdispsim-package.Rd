@@ -1,0 +1,32 @@
+\name{overdispsim-package}
+\alias{overdispsim}
+
+\docType{package}
+
+\title{Simulations of Overdispersion in SECR}
+
+\description{
+
+Code used to simulate overdispersion for paper by Efford and Fletcher.
+  
+}
+
+\details{
+
+\tabular{ll}{
+
+Package: \tab overdispsim\cr
+Type: \tab Package\cr
+Version: \tab 0.0.1\cr
+Date: \tab 2024-01-04\cr
+License: \tab GNU General Public License Version 2 or later\cr
+
+}
+
+Type \code{vignette('Overview', 'overdispsim')} to see the overview vignette.
+
+}
+
+\seealso{
+
+}

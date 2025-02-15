@@ -1,0 +1,22 @@
+import(secr)
+import(secrdesign)
+importFrom("utils", packageVersion)
+importFrom("graphics", "mtext", "segments", "rect", "text")
+importFrom("stats", "predict", "qnorm", "runif", "sd", "sigma", "var")
+
+export(extend)
+export(myRF)
+export(setlocalparameters)
+
+export(extract_n)
+export(extract_M)
+export(extract_MCL)
+
+export(run_all)
+
+export(summary_n)
+export(summary_M)
+export(summary_MCL)
+
+export(sim.cohesion)
+
