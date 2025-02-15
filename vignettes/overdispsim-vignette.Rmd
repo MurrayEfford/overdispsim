@@ -20,6 +20,9 @@ vignette: >
 This vignette explains some of the functions in the package **overdispsim** and 
 provides code for simulations in the paper of Efford and Fletcher (2024). 
 
+Simulations are re-run if the variable 'runsimulations' is set to TRUE; 
+otherwise the simulations are downloaded from Zenodo (Efford 2025).
+
 **overdispsim** uses the R packages **secr** (Efford 2023a) and 
 **secrdesign** (Efford 2023b) available from the CRAN repository. 
 
@@ -33,11 +36,17 @@ with both `rLGCP` and `spatstat`.
 # Setup
 
 ```{r setup}
-library(overdispsim, quietly = TRUE)
+library(overdispsim, quietly = TRUE, warning = FALSE, message = FALSE)
 options(digits = 6)
+runsimulations <- FALSE   # set TRUE to run afresh
+runexamples <- FALSE
+```
 
-# Assign variables to an environment that is available to other 
-# functions in the package. 
+We next set some options by assigning variables to an environment ('.local') that is 
+available to other functions in the package, and incidentally keep a copy 
+in a list named 'local'. 
+
+```{r setup2}
 
 local <- setlocalparameters(
 	lambda0     = 0.5,
@@ -53,6 +62,8 @@ local <- setlocalparameters(
 ```
 
 # Interesting derived quantities
+
+These are non-essential.
 
 ```{r derived}
 
@@ -77,6 +88,7 @@ Alevels  <- c(0.0625, 0.125, 0.25, 0.5, 0.75, 1.0) # randomHabitat A
 Vlevels  <- c(0, 0.125, 0.25, 0.5, 0.75, 1.0)      # LGCP variances
 mulevels <- c(1,2,4,8,16,32)                       # expected number per cluster   
 ```
+
 ## Poisson N(A)
 
 ```{r definepop}
@@ -88,7 +100,8 @@ basepopargs1 <- list(
 	model2D = "rLGCP",
 	details = list(var = 0, scale = 5 * local$sigma, eps = spacing(local$mask), 
 				   saveLambda = TRUE))
-popargs1 <- extend(basepopargs1, values = list(var = Vlevels, scale = c(5,10) * local$sigma))
+popargs1 <- extend(basepopargs1, values = list(var = Vlevels, 
+								scale = c(5,10) * local$sigma))
 #-------------------------------------------------------------------------------
 
 # Thomas clustering
@@ -99,7 +112,8 @@ basepopargs2 <- list(D = local$D,
 					 details = list(mu = 1, scale = local$sigma, eps = 
 					 			   	spacing(local$mask), saveLambda = TRUE))
 # rThomas requires scale>0
-popargs2 <- extend(basepopargs2, values = list(mu = mulevels, scale = c(1e-4, 1, 2, 4)*local$sigma))
+popargs2 <- extend(basepopargs2, values = list(mu = mulevels, 
+								scale = c(1e-4, 1, 2, 4)*local$sigma))
 
 #-------------------------------------------------------------------------------
 
@@ -126,7 +140,8 @@ basepopargs1f <- list(
 	Nbuffer = local$N,
 	details = list(var = 1, scale = 1, N = local$N, eps = spacing(local$mask), 
 				   saveLambda = TRUE))
-popargs1f <- extend(basepopargs1f, values = list(var = Vlevels, scale = c(5,10) * local$sigma))
+popargs1f <- extend(basepopargs1f, values = list(var = Vlevels,
+								scale = c(5,10) * local$sigma))
 #-------------------------------------------------------------------------------
 
 # Clusters (constant size)
@@ -141,7 +156,8 @@ basepopargs2f <- list(D = local$D,
 					  Nbuffer = local$N,
 					  details = list(mu = 1, scale = 1, clone = "constant",
 					  	eps = spacing(local$mask), saveLambda = TRUE))
-popargs2f <- extend(basepopargs2f, values = list(mu = mulevels, scale = c(0,1,2,4)*local$sigma))
+popargs2f <- extend(basepopargs2f, values = list(mu = mulevels, 
+								scale = c(0,1,2,4)*local$sigma))
 #-------------------------------------------------------------------------------
 
 # random habitat, fixed-N
@@ -173,9 +189,9 @@ plot(local$traps, add = TRUE)   # detectors
 
 ## No model fit
 
-[Messages are suppressed.]
+Messages are suppressed.
 
-```{r example1, message = FALSE, cache = TRUE}
+```{r example1, message = FALSE, cache = TRUE, eval = runexamples}
 sims <- run_all(nrepl = 100, pops, fit = FALSE)
 sumn <- summary_n(sims)
 sumn[,1:10]
@@ -184,7 +200,7 @@ sumn[,1:10]
 ## Model fit
 
 Using the same population scenarios -
-```{r example2, message = FALSE, cache = TRUE, warning = FALSE, eval = TRUE}
+```{r example2, message = FALSE, cache = TRUE, warning = FALSE, eval = runexamples}
 simsM <- run_all(nrepl = 10, pops, fit = TRUE)  
 summary_M(simsM)                     
 ```
@@ -216,7 +232,7 @@ Here we list the commands used to generate the main results. Each of these takes
 Here we generate SECR samples, count the number of detected individuals $n$ and 
 compute $\hat c$ using the known detection parameters. Models are not fitted.
 
-```{r samplingonly, eval = FALSE}
+```{r samplingonly, eval = runsimulations}
 
 nrepl <- 10000
 
@@ -234,7 +250,7 @@ sims3f <- run_all(nrepl, popargs3f, fit = FALSE, byscenario = TRUE)
 
 ## Full model fits (suffix M)
 
-```{r modelfits, eval = FALSE}
+```{r modelfits, eval = runsimulations}
 
 nreplM <- 1000
 
@@ -253,17 +269,18 @@ sims2fM <- run_all(nreplM, popargs2f[7:12], fit = TRUE, distribution = "binomial
 
 ## Summaries
 
-Simulation results have been archived on Zenodo (Efford 2025). We retrieve them with the R package **zen4R** (Blondel 2024).
+Simulation results have been archived on Zenodo (Efford 2025). If necessary, 
+we retrieve them with the R package **zen4R** (Blondel 2024).
 
-```{r zenodo, eval = TRUE, echo = TRUE, message=FALSE, warning=FALSE}
+```{r zenodo, eval = !runsimulations, echo = TRUE}
 library(zen4R)
 tmpfolder <- tempdir()
 download_zenodo("10.5281/zenodo.14873670", path = tmpfolder, quiet = TRUE)
 files <- list.files(path = tmpfolder, full.names = TRUE)
 files <- files[grepl('.rdata', tolower(files))]
-reloaded <- unlist(lapply(files, load))
+reloaded <- unlist(lapply(files, load, envir = .GlobalEnv))
+# objects successfully reloaded:
 print(reloaded)
-unlink(tmpfolder, recursive = TRUE)
 ```
 
 Now summarise the simulations
@@ -271,27 +288,27 @@ Now summarise the simulations
 ```{r summaryM, eval = TRUE}
 
 # no fit
-sum1  <- summary_n(sims1) 
+sum1  <- summary_n(sims1)
 sum2  <- summary_n(sims2)
 sum3  <- summary_n(sims3)
-sum1f  <- summary_n(sims1f) 
+sum1f  <- summary_n(sims1f)
 sum2f  <- summary_n(sims2f)
 sum3f  <- summary_n(sims3f)
 
 # vs detection-weighted local density
-sum1M  <- summary_M(sims1M) 
+sum1M  <- summary_M(sims1M)
 sum2M  <- summary_M(sims2M)
 sum3M  <- summary_M(sims3M)
 
 # vs global density
-sum1MT <- summary_M(sims1M, true = 2844.44)  
-sum2MT <- summary_M(sims2M, true = 2844.44)  
-sum3MT <- summary_M(sims3M, true = 2844.44)  
+sum1MT <- summary_M(sims1M, true = local$D)
+sum2MT <- summary_M(sims2M, true = local$D)
+sum3MT <- summary_M(sims3M, true = local$D)
 
 # conditional likelihood (for COV(a) etc.)
-sum1MCL <- summary_MCL(sims1MCL, true = 2844.44)  
-sum2MCL <- summary_MCL(sims2MCL, true = 2844.44)  
-sum3MCL <- summary_MCL(sims3MCL, true = 2844.44)  
+sum1MCL <- summary_MCL(sims1MCL, true = local$D)
+sum2MCL <- summary_MCL(sims2MCL, true = local$D)
+sum3MCL <- summary_MCL(sims3MCL, true = local$D)
 ```
 
 ```{r savesummary, echo = FALSE, eval = FALSE}
@@ -342,12 +359,14 @@ write.csv(sum3MCL, file='extra/sum3MCL.csv')
 
 # CL
 
-The SECR model was fitted by maximising the conditional likelihood as a convenient way to simulate the coverage of confidence intervals for the effective sampling area $a(\hat \theta)$ and the proportion of variance due to $n$ and $a(\hat \theta)$.
+The SECR model was fitted by maximising the conditional likelihood as a convenient
+way in **secr** to simulate the coverage of confidence intervals for the effective
+sampling area $a(\hat \theta)$ and the proportion of variance due to $n$ and $a(\hat \theta)$.
 
-```{r CLfit, eval = FALSE}
+```{r CLfit, eval = runsimulations}
 # Poisson N
 sims1MCL <- run_all(1000, popargs1[7:12], fit = TRUE, CL = TRUE)
-sims2MCL <- run_all(1000, popargs2[13:18], fit = TRUE, CL = TRUE, 
+sims2MCL <- run_all(1000, popargs2[13:18], fit = TRUE, CL = TRUE,
 				 start = list(D = 3000, lambda0 = 0.4, sigma = 2.2))
 sims3MCL <- run_all(1000, popargs3[7:12], fit = TRUE, CL = TRUE)
 ```
@@ -356,7 +375,7 @@ sims3MCL <- run_all(1000, popargs3[7:12], fit = TRUE, CL = TRUE)
 
 Additional simulations were performed with overdispersion in the detection process. A novel function (`sim.capthist`) is defined for simulating detection with variable within-cluster cohesion, ranging from none (gamma = 0) to complete (gamma = 1). This applies *only* to clustered AC.
 
-```{r cohesion, eval = FALSE}
+```{r cohesion, eval = runsimulations}
 detargs <- list (savepopn = TRUE, gamma = 1)  # complete cohesion
 # No fit
 sims2C <- run_all(10000, popargs2, CH.function = "sim.cohesion", detargs = detargs,
@@ -371,8 +390,8 @@ sims2CfCL <- run_all(1000, popargs2f[1:6], CH.function = "sim.cohesion", detargs
 ```
 
 ```{r cohesion1, eval = FALSE, echo = FALSE}
-sum2CCL <- summary_MCL(sims2CCL, true = 2844.44)
-sum2CfCL <- summary_MCL(sims2CfCL, true = 2844.44) 
+sum2CCL <- summary_MCL(sims2CCL, true = local$D)
+sum2CfCL <- summary_MCL(sims2CfCL, true = local$D)
 ```
 
 # References
@@ -388,13 +407,13 @@ Borchers, D. L. and Efford, M. G. (2008) Spatially explicit maximum likelihood m
 
 Efford, M. G. (2023a) secr: Spatially explicit capture--recapture models. R package version
   4.6.4. https://CRAN.R-project.org/package=secr/
-  
+
 Efford, M. G. (2023b) openCR: Spatially explicit capture--recapture models. R package version
   2.2.6. https://CRAN.R-project.org/package=openCR/
 
 Efford, M. G. (2025) Simulations of overdispersed activity centres in spatially explicit capture-recapture [Data set]. Zenodo. https://doi.org/10.5281/zenodo.14873670
 
-Efford, M. G. and Fletcher, D. (2024)  The effect of spatial overdispersion on confidence intervals for population density estimated by spatially explicit capture--recapture. bioRxiv https://doi.org/10.1101/2024.03.12.584742. 
+Efford, M. G. and Fletcher, D. (2024)  The effect of spatial overdispersion on confidence intervals for population density estimated by spatially explicit capture--recapture. bioRxiv https://doi.org/10.1101/2024.03.12.584742.
 
 Saura, S., and Martínez-Millán, J. (2000) Landscape patterns simulation with a modified random clusters method. *Landscape Ecology* **15**, 661--678.
 
@@ -409,7 +428,7 @@ summary_n(sims1) # LGCP Poisson N(A)
 summary_n(sims2) # Thomas Poisson N(A)
 summary_n(sims3) # Random habitat Poisson N(A)
 
-summary_n(sims1f) # LGCP fixed N(A) 
+summary_n(sims1f) # LGCP fixed N(A)
 summary_n(sims2f) # Fixed cluster process
 summary_n(sims3f) # Random habitat fixed N(A)
 ```
@@ -422,16 +441,16 @@ summary_M(sims1M) # LGCP Poisson N(A)
 summary_M(sims2M) # Thomas Poisson N(A)
 summary_M(sims3M) # Random habitat Poisson N(A)
 
-summary_M(sims1fM) # LGCP fixed N(A) 
+summary_M(sims1fM) # LGCP fixed N(A)
 summary_M(sims2fM) # Fixed cluster process
 summary_M(sims3fM) # Random habitat fixed N(A)
 ```
 
 Summarise relative to global density --
 ```{r summaryMprint2, eval = TRUE}
-summary_M(sims1M, true = 2844.44) # LGCP Poisson N(A)
-summary_M(sims2M, true = 2844.44) # Thomas Poisson N(A)
-summary_M(sims3M, true = 2844.44) # Random habitat Poisson N(A)
+summary_M(sims1M, true = local$D) # LGCP Poisson N(A)
+summary_M(sims2M, true = local$D) # Thomas Poisson N(A)
+summary_M(sims3M, true = local$D) # Random habitat Poisson N(A)
 ```
 
 ## Model fitted, conditional likelihood
@@ -445,7 +464,14 @@ summary_MCL(sims3MCL) # Random habitat Poisson N(A)
 ## Model fitted, conditional likelihood, complete cohesion
 
 ```{r cohesion2, eval = TRUE}
-summary_MCL(sims2CCL, true = 2844.44)   # Thomas cluster process
-summary_MCL(sims2CfCL, true = 2844.44)  # fixed cluster process
+summary_MCL(sims2CCL, true = local$D)   # Thomas cluster process
+summary_MCL(sims2CfCL, true = local$D)  # fixed cluster process
+```
+
+# Finally...
+
+```{r cleanup, eval = !runsimulations}
+# appears to fail when knitting to pdf
+unlink(tmpfolder, recursive = TRUE)
 ```
 
