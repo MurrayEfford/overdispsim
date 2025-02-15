@@ -251,32 +251,46 @@ sims2fM <- run_all(nreplM, popargs2f[7:12], fit = TRUE, distribution = "binomial
 ## Summaries
 
 ```{r load, eval = TRUE, echo = FALSE}
-matrixfolder <- 'd:/density communication/overdispersion/matrix/'
+# Simulation results have been archived as 
 
-load(file = paste0(matrixfolder, 'sims1.RData'))
-load(file = paste0(matrixfolder, 'sims2.RData'))
-load(file = paste0(matrixfolder, 'sims3.RData'))
+# Efford MG (2025) Simulations of overdispersed activity centres in 
+# spatially explicit capture-recapture [Data set]. Zenodo. 
+# <https://doi.org/10.5281/zenodo.14873670>
 
-load(file = paste0(matrixfolder, 'sims1f.RData'))
-load(file = paste0(matrixfolder, 'sims2f.RData'))
-load(file = paste0(matrixfolder, 'sims3f.RData'))
+# We retrieve them with the R package zen4R
+# Blondel E (2024) _zen4R: Interface to 'Zenodo' REST API_. R package version
+#   0.10, <https://CRAN.R-project.org/package=zen4R>
+  
+require(zen4R)
+tmpfolder <- tempdir()
+on.exit(unlink(tmpfolder, recursive = TRUE))
+download_zenodo(path = tmpfolder, "10.5281/zenodo.14873670")
 
-load(file = paste0(matrixfolder, 'sims1M.RData'))
-load(file = paste0(matrixfolder, 'sims2M.RData'))
-load(file = paste0(matrixfolder, 'sims3M.RData'))
-load(file = paste0(matrixfolder, 'sims1fM.RData'))
-load(file = paste0(matrixfolder, 'sims2fM.RData'))
-load(file = paste0(matrixfolder, 'sims3fM.RData'))
+tmpfolder <- paste0(tmpfolder, '/')
+load(file = paste0(tmpfolder, 'sims1.RData'))
+load(file = paste0(tmpfolder, 'sims2.RData'))
+load(file = paste0(tmpfolder, 'sims3.RData'))
 
-load(file = paste0(matrixfolder, 'sims1MCL.RData'))
-load(file = paste0(matrixfolder, 'sims2MCL.RData'))
-load(file = paste0(matrixfolder, 'sims3MCL.RData'))
+load(file = paste0(tmpfolder, 'sims1f.RData'))
+load(file = paste0(tmpfolder, 'sims2f.RData'))
+load(file = paste0(tmpfolder, 'sims3f.RData'))
 
-load(file = paste0(matrixfolder, 'sims2CCL.RData'))   # cohesion
-load(file = paste0(matrixfolder, 'sims2CfCL.RData'))  # cohesion, fixed N(A)
+load(file = paste0(tmpfolder, 'sims1M.RData'))
+load(file = paste0(tmpfolder, 'sims2M.RData'))
+load(file = paste0(tmpfolder, 'sims3M.RData'))
+load(file = paste0(tmpfolder, 'sims1fM.RData'))
+load(file = paste0(tmpfolder, 'sims2fM.RData'))
+load(file = paste0(tmpfolder, 'sims3fM.RData'))
+
+load(file = paste0(tmpfolder, 'sims1MCL.RData'))
+load(file = paste0(tmpfolder, 'sims2MCL.RData'))
+load(file = paste0(tmpfolder, 'sims3MCL.RData'))
+
+load(file = paste0(tmpfolder, 'sims2CCL.RData'))   # cohesion
+load(file = paste0(tmpfolder, 'sims2CfCL.RData'))  # cohesion, fixed N(A)
 ```
 
-```{r summaryM, eval = FALSE}
+```{r summaryM, eval = TRUE}
 
 # no fit
 sum1  <- summary_n(sims1) 
@@ -300,7 +314,6 @@ sum3MT <- summary_M(sims3M, true = 2844.44)
 sum1MCL <- summary_MCL(sims1MCL, true = 2844.44)  
 sum2MCL <- summary_MCL(sims2MCL, true = 2844.44)  
 sum3MCL <- summary_MCL(sims3MCL, true = 2844.44)  
-
 ```
 
 ```{r savesummary, echo = FALSE, eval = FALSE}
@@ -450,199 +463,4 @@ summary_MCL(sims3MCL) # Random habitat Poisson N(A)
 summary_MCL(sims2CCL, true = 2844.44)   # Thomas cluster process
 summary_MCL(sims2CfCL, true = 2844.44)  # fixed cluster process
 ```
-
-<!-- # Appendix 2. Multi-session overdispersion. {#appendix2} -->
-
-<!-- Experimental code to simulate repeated sampling of the same population. -->
-
-<!-- WHAT ABOUT FIXED-N(A)? -->
-
-<!-- ```{r simsmulti1, message = FALSE, cache = TRUE, warning = FALSE, eval = FALSE} -->
-<!-- baseargs <- list( -->
-<!-- 	D         = local$D,  -->
-<!-- 	core      = local$mask, -->
-<!-- 	buffer    = 0,    # uses bounding box of mask -->
-<!-- 	model2D   = "poisson", -->
-<!-- 	nsessions = 10, -->
-<!-- 	details   = list(lambda = 1, phi = 1, movemodel = 'static')) -->
-<!-- popargsmulti <-  rep(list(baseargs), 3) -->
-<!-- popargsmulti[[1]][['details']]$lambda <- NULL -->
-<!-- popargsmulti[[3]][['details']]$movemodel <- "IND" -->
-<!-- names(popargsmulti) <- c('poisson','constant','independent') -->
-<!-- sapply(popargsmulti[2:3], '[[', 'details') -->
-
-<!-- ex_n <- function(CH) sapply(CH, nrow) -->
-<!-- ex_M <- function(fit) predict(fit)[[1]] -->
-<!-- ex_MCL <- function(fit) derived(fit) -->
-
-<!-- simsMulti_n <- run_all( -->
-<!-- 	nrepl      = 10000,  -->
-<!-- 	popargs    = popargsmulti,  -->
-<!-- 	fit        = FALSE,  -->
-<!-- 	extractfn  = ex_n,  -->
-<!-- 	seed       = 97531, -->
-<!-- 	byscenario = TRUE)   -->
-
-<!-- for (i in 1:3) popargsmulti[[i]]$Ndist <- "fixed" -->
-
-<!-- simsMulti_nf <- run_all( -->
-<!-- 	nrepl      = 10000,  -->
-<!-- 	popargs    = popargsmulti,  -->
-<!-- 	fit        = FALSE,  -->
-<!-- 	extractfn  = ex_n,  -->
-<!-- 	seed       = 97531,  -->
-<!-- 	byscenario = TRUE)   -->
-
-<!-- save(simsMulti_n, simsMulti_nf, file = 'simsMulti_n.RData') -->
-
-<!-- for (i in 1:3) popargsmulti[[i]]$Ndist <- "poisson" -->
-
-<!-- simsMulti_M <- run_all( -->
-<!-- 	nrepl      = 1000,  -->
-<!-- 	popargs    = popargsmulti[1:2],  -->
-<!-- 	fit        = TRUE,  -->
-<!-- 	extractfn  = ex_M, -->
-<!-- 	seed       = 97531,  -->
-<!-- 	byscenario = FALSE -->
-<!-- )   -->
-
-<!-- simsMulti_MCL <- run_all( -->
-<!-- 	nrepl      = 100,  -->
-<!-- 	popargs    = popargsmulti[2],  -->
-<!-- 	fit        = TRUE,  -->
-<!-- 	CL         = TRUE, -->
-<!-- 	extractfn  = ex_MCL, -->
-<!-- 	seed       = 97531, -->
-<!-- 	byscenario = FALSE -->
-<!-- )   -->
-<!-- # save(simsMulti_n, simsMulti_nf, simsMulti_M, simsMulti_MCL, file = 'extra/simsMulti.RData') -->
-<!-- # load(file = 'extra/simsMulti.RData') -->
-<!-- fn <- function(x) c(var1 = var(x[,1]), varwithin = mean(apply(x,1,var)),  -->
-<!-- 					varsum = var(apply(x,1,sum)),  -->
-<!-- 					nbar = mean(apply(x,1,sum))) -->
-<!-- sapply(simsMulti_n$output, fn) -->
-<!-- #                 1         2         3 -->
-<!-- # var1       181.38   180.651   179.039 -->
-<!-- # varwithin  180.09    13.896    53.023 -->
-<!-- # varsum    1813.46 16824.539 13230.299 -->
-
-<!-- sapply(simsMulti_nf$output, fn) -->
-<!-- #                 1        2       3 -->
-<!-- # var1       53.961   52.042  53.127 -->
-<!-- # varwithin  53.562   14.030  53.097 -->
-<!-- # varsum    529.535 3934.999 528.590 -->
-
-<!-- load('d:/density communication/overdispersion/matrix/simsMulti_M.RDATA') -->
-<!-- summary(simsMulti_M)        -->
-
-
-<!-- # run.scenarios(nrepl = nrepl, scenarios = scen, trapset = .local$traps,  -->
-<!-- #     maskset = .local$mask, pop.args = popargs, CH.function = CH.function,  -->
-<!-- #     det.args = detargs, fit = fit, fit.args = fitargs, extractfn = extractfn,  -->
-<!-- #     ncores = ncores, byscenario = byscenario, seed = seed) -->
-<!-- #  -->
-<!-- # Replicates    1000  -->
-<!-- # Started       10:22:13 08 Dec 2023  -->
-<!-- # Run time      2973  minutes  -->
-<!-- # Output class  selectedstatistics  -->
-<!-- #  -->
-<!-- # $constant -->
-<!-- #                        value -->
-<!-- # trapsindex                 1 -->
-<!-- # noccasions                 5 -->
-<!-- # nrepeats                   1 -->
-<!-- # D           2844.44444444444 -->
-<!-- # lambda0                  0.5 -->
-<!-- # sigma                      1 -->
-<!-- # detectfn                  14 -->
-<!-- # recapfactor                1 -->
-<!-- # detindex                   1 -->
-<!-- # fitindex                   1 -->
-<!-- # maskindex                  1 -->
-<!-- #  -->
-<!-- # $varying -->
-<!-- #  scenario popindex -->
-<!-- #         1        1 -->
-<!-- #         2        2 -->
-<!-- #         3        3 -->
-<!-- #  -->
-<!-- # $detectors -->
-<!-- #  trapsindex trapsname -->
-<!-- #           1    traps1 -->
-<!-- #  -->
-<!-- # $pop.args -->
-<!-- #  popindex      D core buffer model2D nsessions                         details -->
-<!-- #         1 2844.4 core      0 poisson        10          phi=1,movemodel=static -->
-<!-- #         2 2844.4 core      0 poisson        10 lambda=1,phi=1,movemodel=static -->
-<!-- #         3 2844.4 core      0 poisson        10    lambda=1,phi=1,movemodel=IND -->
-<!-- #  -->
-<!-- # $det.args -->
-<!-- #  detindex savepopn -->
-<!-- #         1     TRUE -->
-<!-- #  -->
-<!-- # $fit.args -->
-<!-- #  fitindex detectfn mask    CL start              details -->
-<!-- #         1      HHN mask FALSE       distribution=poisson -->
-<!-- #  -->
-<!-- # OUTPUT -->
-<!-- #  -->
-<!-- # $1 -->
-<!-- #  1  -->
-<!-- #                 n       mean      se -->
-<!-- # estimate    1000 2842.08711 2.15148 -->
-<!-- # SE.estimate 1000   67.32022 0.02589 -->
-<!-- # lcl         1000 2713.17595 2.10120 -->
-<!-- # ucl         1000 2977.12416 2.20182 -->
-<!-- # RB          1000   -0.00083 0.00076 -->
-<!-- # RSE         1000    0.02369 0.00001 -->
-<!-- # COV         1000    0.94100 0.00745 -->
-<!-- #  -->
-<!-- # $2 -->
-<!-- #  2  -->
-<!-- #                 n      mean      se -->
-<!-- # estimate    1000 2849.2756 6.35590 -->
-<!-- # SE.estimate 1000   67.3603 0.07530 -->
-<!-- # lcl         1000 2720.2852 6.20858 -->
-<!-- # ucl         1000 2984.3905 6.50323 -->
-<!-- # RB          1000    0.0017 0.00223 -->
-<!-- # RSE         1000    0.0237 0.00003 -->
-<!-- # COV         1000    0.4700 0.01579 -->
-<!-- #  -->
-<!-- # $3 -->
-<!-- #  3  -->
-<!-- #                n       mean      se -->
-<!-- # estimate    1000 2846.88389 5.78165 -->
-<!-- # SE.estimate 1000   67.35045 0.06864 -->
-<!-- # lcl         1000 2717.91375 5.64737 -->
-<!-- # ucl         1000 2981.98049 5.91597 -->
-<!-- # RB          1000    0.00086 0.00203 -->
-<!-- # RSE         1000    0.02371 0.00002 -->
-<!-- # COV         1000    0.51800 0.01581 -->
-
-<!-- # open population simulations -->
-<!-- # rerun with 200 replicates 2023-12-12;  -->
-<!-- library(openCR) -->
-<!-- detargs <- list(traps = local$traps, noccasions = local$noccasions,  -->
-<!-- 				detectfn = 'HHN', detectpar = local$detectpar) -->
-<!-- fitargs <- list(detectfn = 'HHN', mask = local$mask, type = 'JSSAsecrD', -->
-<!-- 				model = list(phi~1, D~1), fixed = list(phi=1,f=0)) -->
-<!-- # Ndist poisson -->
-<!-- opensims3 <- mapply(runsim.spatial, popargs = popargsmulti[2],  -->
-<!-- 	MoreArgs = list (nrepl = 200, seed = NULL, ncores = 24, detargs = detargs, -->
-<!-- 		fitargs = fitargs, extractfn = predict), SIMPLIFY = FALSE) -->
-<!-- save(opensims3, file = 'opensims3.RData') -->
-
-<!-- load('d:/density communication/overdispersion/matrix/opensims3.RDATA') -->
-<!-- get <- function(sims = opensims, stat = 'estimate', scen=1) { -->
-<!-- 	unlist(sapply(sims[[scen]], function(y) y$D[1,])[stat,])	 -->
-<!-- }  -->
-<!-- sumo <- function (sims) { -->
-<!-- 	c(COV = mean((get(sims, 'lcl') < 2844.44) & (get(sims, 'ucl') >2844.44)), -->
-<!-- 	  RSE = mean(get(sims, 'SE.estimate') / get(sims, 'estimate')), -->
-<!-- 	  RB = mean((2844.44 - get(sims, 'estimate')) / 2844.44)) -->
-<!-- } -->
-<!-- sumo(opensims3) -->
-<!--  #      COV       RSE        RB  -->
-<!--  # 0.915000  0.068259 -0.003749  -->
-<!-- ``` -->
 
