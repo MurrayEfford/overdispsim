@@ -35,8 +35,8 @@ with both `rLGCP` and `spatstat`.
 
 # Setup
 
-```{r setup}
-library(overdispsim, quietly = TRUE, warning = FALSE, message = FALSE)
+```{r setup, warning = FALSE, message = FALSE}
+library(overdispsim, quietly = TRUE)
 options(digits = 6)
 runsimulations <- FALSE   # set TRUE to run afresh
 runexamples <- FALSE
