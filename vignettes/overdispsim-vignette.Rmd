@@ -46,7 +46,7 @@ Package **zen4R** (Blondel 2024) is required to download simulations from Zenodo
 ```{r setup, warning = FALSE, message = FALSE}
 library(overdispsim, quietly = TRUE)
 library(zen4R)
-options(digits = 6)
+options(digits = 5)
 runsimulations <- FALSE   # set TRUE to run afresh
 runexamples <- FALSE
 ```
