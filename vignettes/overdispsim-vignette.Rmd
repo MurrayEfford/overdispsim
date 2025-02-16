@@ -39,7 +39,7 @@ with both `rLGCP` and `spatstat`.
 library(overdispsim, quietly = TRUE)
 options(digits = 6)
 runsimulations <- FALSE   # set TRUE to run afresh
-runexamples <- TRUE
+runexamples <- FALSE
 ```
 
 We next set some options by assigning variables to an environment ('.local') that is 
@@ -186,6 +186,8 @@ pop <- do.call(sim.popn, popargs2[[18]])
 plot(pop)                   # AC
 plot(local$traps, add = TRUE)   # detectors
 ```
+
+Further execution of the example is suppressed by default, but can be cut-and-pasted into an R session. 
 
 ## No model fit
 
