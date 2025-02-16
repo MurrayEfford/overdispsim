@@ -9,8 +9,10 @@ Simulation results are archived on Zenodo (Efford 2025).
 
 The package may be installed in R using
 ```
-devtools::install_github("MurrayEfford/overdispsim")
+devtools::install_github("MurrayEfford/overdispsim",  build_vignettes = TRUE)
 ```
+
+This takes some time to run, as it rebuilds the vignette.
 
 The R code to run simulations is in the Rmarkdown file overdispsim-vignette.rmd 
 in the vignettes folder. The best way to view the script is to install the 
