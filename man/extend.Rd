@@ -40,12 +40,12 @@ List of argument lists for \code{\link{sim.popn}}.
 
 \examples{
 
-setlocalparameters()
+localpar <- setlocalparameters()
 basepopargs3 <- list(D = randomDensity, 
-					 core = .local$mask,
+					 core = localpar$mask,
 					 buffer = 0,
 					 model2D = "IHP",
-					 details = list(D = .local$D, p=0.5, A=0.25, rescale=TRUE))
+					 details = list(D = localpar$D, p=0.5, A=0.25, rescale=TRUE))
 
 # vary A, p arguments of randomDensity					 
 popargs3 <- extend(basepopargs3, values = list(A = c(0.25,0.5), p = c(0.25, 0.5)) )
