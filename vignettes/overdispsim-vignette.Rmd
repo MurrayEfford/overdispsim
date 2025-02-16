@@ -33,6 +33,8 @@ Functions `rLGCP` and `rThomas` from the **spatstat** package (Baddeley et al. 2
 Package RandomFields (Schlather et al. 2015) is required for LGCP simulations 
 with both `rLGCP` and `spatstat`. 
 
+Package zen4R (Blondel 2024) is required to download simulations from Zenodo.
+
 # Setup
 
 ```{r setup, warning = FALSE, message = FALSE}
