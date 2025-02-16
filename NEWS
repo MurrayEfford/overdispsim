@@ -1,7 +1,7 @@
-Changes in version 0.0.2 (2025-02-15)
+Changes in version 0.0.2 (2025-02-16)
 
 New features or changed behaviour of old functions
-    o   none
+    o   setlocalparameters() maxncores capped at number available
     
 Other
     o   vignette downloads simulations from Zenodo
