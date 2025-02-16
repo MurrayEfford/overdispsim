@@ -3,6 +3,7 @@ import(secrdesign)
 importFrom("utils", packageVersion)
 importFrom("graphics", "mtext", "segments", "rect", "text")
 importFrom("stats", "predict", "qnorm", "runif", "sd", "sigma", "var")
+importFrom("parallel", "detectCores")
 
 export(extend)
 export(myRF)
