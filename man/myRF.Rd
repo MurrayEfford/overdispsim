@@ -42,3 +42,13 @@ fixed \tab TRUE \tab conditional? \cr
 Vector of cell-specific densities.
 
 }
+
+
+\section{Notes}{
+
+Package RandomFields is not currently on CRAN. It may be installed with this code:
+
+\code{install.packages("RandomFields", repos = c("https://spatstat.r-universe.dev", 
+   "https://cloud.r-project.org"))}
+
+}
