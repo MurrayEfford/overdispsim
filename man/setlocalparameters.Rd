@@ -34,6 +34,8 @@ A mask is generated. The derived variables `detectpar`, `D`, `pd` and `enk` are 
 
 \code{setlocalparameters} is called by `on.attach()` and may be called again to replace values.
 
+'maxncores' is capped at the number available, as given by parallel::detectCores().
+
 }
 
 \value{

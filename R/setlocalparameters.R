@@ -21,7 +21,7 @@ setlocalparameters <- function (
 	.local$N <- N
 	.local$D <- N/maskarea(mask)
 	.local$noccasions <- noccasions
-	.local$maxncores <- maxncores
+	.local$maxncores <- min(parallel::detectCores(), maxncores)
 	
 	# probability of detection at each mask point
 	.local$pd <- secr::pdot(mask, traps, detectfn = detectfn, detectpar = 
