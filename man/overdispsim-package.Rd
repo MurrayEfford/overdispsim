@@ -18,7 +18,7 @@ Code used to simulate overdispersion for paper by Efford and Fletcher.
 Package: \tab overdispsim\cr
 Type: \tab Package\cr
 Version: \tab 0.0.2\cr
-Date: \tab 2025-02-15\cr
+Date: \tab 2025-02-16\cr
 License: \tab GNU General Public License Version 2 or later\cr
 
 }
