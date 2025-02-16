@@ -54,7 +54,7 @@ is capped at the number available if that is less than the given maxncores.
 
 ```{r setup2}
 
-localpar <- setlocalpareters(
+localpar <- setlocalparameters(
 	lambda0     = 0.5,
 	sigma       = 1.0,
 	detectfn    = 'HHN',
