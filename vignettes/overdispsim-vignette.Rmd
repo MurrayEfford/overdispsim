@@ -28,17 +28,25 @@ otherwise the simulations are downloaded from Zenodo (Efford 2025).
 
 Three processes are simulated for the distribution of activity centres (AC): a log-Gaussian Cox process (LGCP), a Thomas cluster process and a random binary habitat mosaic.
 
-Functions `rLGCP` and `rThomas` from the **spatstat** package (Baddeley et al. 2015) are used where possible. However, simulations conditional on $N(A)$ (the fixed number in buffered area $A$) required custom code for LGCP (the exported function `myRF`), and the fixed cluster process of Bischof et al. (2020) was emulated using the **secr** function `sim.popn` with settings model2D = "cluster" and details$clone = "constant" (see below.)
+Functions `rLGCP` and `rThomas` from the **spatstat** package (Baddeley et al. 2015) are used where possible. The algorithm for `rLGCP` in **spatstat.random** changed in version 3.2.1 (Oct 2023) to avoid dependence on **RandomFields**. Simulations here were run with the earlier code and may differ (see warning in `?spatstat.random::rLGCP`).
 
-Package RandomFields (Schlather et al. 2015) is required for LGCP simulations 
-with both `rLGCP` and `spatstat`. 
+However, simulations conditional on $N(A)$ (the fixed number in buffered area $A$) required custom code for LGCP (the exported function `myRF`). Package **RandomFields** (Schlather et al. 2015) is required for LGCP simulations 
+with `myRF`. Package **RandomFields** is not currently on CRAN. It may be installed with this code:
+	
+```
+install.packages("RandomFields", repos = c("https://spatstat.r-universe.dev", 
+   "https://cloud.r-project.org"))
+```
 
-Package zen4R (Blondel 2024) is required to download simulations from Zenodo.
+The fixed cluster process of Bischof et al. (2020) was emulated using the **secr** function `sim.popn` with settings model2D = "cluster" and details$clone = "constant" (see below).
+
+Package **zen4R** (Blondel 2024) is required to download simulations from Zenodo.
 
 # Setup
 
 ```{r setup, warning = FALSE, message = FALSE}
 library(overdispsim, quietly = TRUE)
+library(zen4R)
 options(digits = 6)
 runsimulations <- FALSE   # set TRUE to run afresh
 runexamples <- FALSE
@@ -281,9 +289,8 @@ Simulation results have been archived on Zenodo (Efford 2025). If necessary,
 we retrieve them with the R package **zen4R** (Blondel 2024).
 
 ```{r zenodo, eval = !runsimulations, echo = TRUE}
-library(zen4R)
 tmpfolder <- tempdir()
-download_zenodo("10.5281/zenodo.14873670", path = tmpfolder, quiet = TRUE)
+zen4R::download_zenodo("10.5281/zenodo.14873670", path = tmpfolder, quiet = TRUE)
 files <- list.files(path = tmpfolder, full.names = TRUE)
 files <- files[grepl('.rdata', tolower(files))]
 reloaded <- unlist(lapply(files, load, envir = .GlobalEnv))
