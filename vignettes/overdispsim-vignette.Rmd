@@ -34,8 +34,7 @@ However, simulations conditional on $N(A)$ (the fixed number in buffered area $A
 with `myRF`. Package **RandomFields** is not currently on CRAN. It may be installed with this code:
 	
 ```
-install.packages("RandomFields", repos = c("https://spatstat.r-universe.dev", 
-   "https://cloud.r-project.org"))
+install.packages("RandomFields", repos = "https://spatstat.r-universe.dev")
 ```
 
 The fixed cluster process of Bischof et al. (2020) was emulated using the **secr** function `sim.popn` with settings model2D = "cluster" and details$clone = "constant" (see below).
