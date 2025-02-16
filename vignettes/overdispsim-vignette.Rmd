@@ -49,7 +49,7 @@ available to other functions in the package, and incidentally keep a copy
 in a list named 'localpar'. 
 
 The function is run with these arguments automatically when the package is attached 
-(i.e. in onAttach), so these are default settings. The actual number of cores 
+(i.e. in .onAttach), so these are default settings. The actual number of cores 
 is capped at the number available if that is less than the given maxncores.
 
 ```{r setup2}
