@@ -44,11 +44,15 @@ runexamples <- FALSE
 
 We next set some options by assigning variables to an environment ('.local') that is 
 available to other functions in the package, and incidentally keep a copy 
-in a list named 'local'. 
+in a list named 'localpar'. 
+
+The function is run with these arguments automatically when the package is attached 
+(i.e. in onAttach), so these are default settings. The actual number of cores 
+is capped at the number available if that is less than the given maxncores.
 
 ```{r setup2}
 
-local <- setlocalparameters(
+localpar <- setlocalpareters(
 	lambda0     = 0.5,
 	sigma       = 1.0,
 	detectfn    = 'HHN',
@@ -68,16 +72,16 @@ These are non-essential.
 ```{r derived}
 
 # expected variance of binomial n
-a <- sum(local$pd * attr(local$mask, 'area'))
-p <- a / maskarea(local$mask)
-Evarn <- p * (1-p) * local$N
+a <- sum(localpar$pd * attr(localpar$mask, 'area'))
+p <- a / maskarea(localpar$mask)
+Evarn <- p * (1-p) * localpar$N
 
 # expected number of individuals detected
-En <- sum(local$pd) * attr(local$mask, 'area') * local$D
+En <- sum(localpar$pd) * attr(localpar$mask, 'area') * localpar$D
 
 # expected number of individuals at each detector
-enk <- Enk(D = local$D, local$mask, local$traps, detectfn = local$detectfn,
-		   detectpar = local$detectpar, noccasions = local$noccasions)
+enk <- Enk(D = localpar$D, localpar$mask, localpar$traps, detectfn = localpar$detectfn,
+		   detectpar = localpar$detectpar, noccasions = localpar$noccasions)
 ```
 
 # Define populations
@@ -94,35 +98,35 @@ mulevels <- c(1,2,4,8,16,32)                       # expected number per cluster
 ```{r definepop}
 # LGCP
 basepopargs1 <- list(
-	D = local$D, 
-	core = local$mask,
+	D = localpar$D, 
+	core = localpar$mask,
 	buffer = 0,    # uses bounding box of mask
 	model2D = "rLGCP",
-	details = list(var = 0, scale = 5 * local$sigma, eps = spacing(local$mask), 
+	details = list(var = 0, scale = 5 * localpar$sigma, eps = spacing(localpar$mask), 
 				   saveLambda = TRUE))
 popargs1 <- extend(basepopargs1, values = list(var = Vlevels, 
-								scale = c(5,10) * local$sigma))
+								scale = c(5,10) * localpar$sigma))
 #-------------------------------------------------------------------------------
 
 # Thomas clustering
-basepopargs2 <- list(D = local$D, 
-					 core = local$mask,
-					 buffer = spacing(local$mask)/2,
+basepopargs2 <- list(D = localpar$D, 
+					 core = localpar$mask,
+					 buffer = spacing(localpar$mask)/2,
 					 model2D = "rThomas",
-					 details = list(mu = 1, scale = local$sigma, eps = 
-					 			   	spacing(local$mask), saveLambda = TRUE))
+					 details = list(mu = 1, scale = localpar$sigma, eps = 
+					 			   	spacing(localpar$mask), saveLambda = TRUE))
 # rThomas requires scale>0
 popargs2 <- extend(basepopargs2, values = list(mu = mulevels, 
-								scale = c(1e-4, 1, 2, 4)*local$sigma))
+								scale = c(1e-4, 1, 2, 4)*localpar$sigma))
 
 #-------------------------------------------------------------------------------
 
 # random habitat 
 basepopargs3 <- list(D = randomDensity, 
-					 core = local$mask,
+					 core = localpar$mask,
 					 buffer = 0,
 					 model2D = "IHP",
-					 details = list(D = local$D, p=0.5, A=0.25, rescale=TRUE))
+					 details = list(D = localpar$D, p=0.5, A=0.25, rescale=TRUE))
 popargs3 <- extend(basepopargs3, values = list(A = Alevels, p = c(0.25, 0.5)) )
 ```
 
@@ -133,40 +137,40 @@ popargs3 <- extend(basepopargs3, values = list(A = Alevels, p = c(0.25, 0.5)) )
 # random field
 basepopargs1f <- list(
 	D = myRF, 
-	core = local$mask,
+	core = localpar$mask,
 	buffer = 0,
 	model2D = "IHP",
 	Ndist   = "fixed",
-	Nbuffer = local$N,
-	details = list(var = 1, scale = 1, N = local$N, eps = spacing(local$mask), 
+	Nbuffer = localpar$N,
+	details = list(var = 1, scale = 1, N = localpar$N, eps = spacing(localpar$mask), 
 				   saveLambda = TRUE))
 popargs1f <- extend(basepopargs1f, values = list(var = Vlevels,
-								scale = c(5,10) * local$sigma))
+								scale = c(5,10) * localpar$sigma))
 #-------------------------------------------------------------------------------
 
 # Clusters (constant size)
 # no algorithm for fixed-N rThomas?
 # cf Bischof et al. fixed clusters (clone = "constant", scale = 0)
 
-basepopargs2f <- list(D = local$D, 
-					  core = local$mask,
-					  buffer = spacing(local$mask)/2,
+basepopargs2f <- list(D = localpar$D, 
+					  core = localpar$mask,
+					  buffer = spacing(localpar$mask)/2,
 					  model2D = "cluster",
 					  Ndist   = "fixed",
-					  Nbuffer = local$N,
+					  Nbuffer = localpar$N,
 					  details = list(mu = 1, scale = 1, clone = "constant",
-					  	eps = spacing(local$mask), saveLambda = TRUE))
+					  	eps = spacing(localpar$mask), saveLambda = TRUE))
 popargs2f <- extend(basepopargs2f, values = list(mu = mulevels, 
-								scale = c(0,1,2,4)*local$sigma))
+								scale = c(0,1,2,4)*localpar$sigma))
 #-------------------------------------------------------------------------------
 
 # random habitat, fixed-N
 basepopargs3f <- list(D      = randomDensity, 
-					  core    = local$mask,
+					  core    = localpar$mask,
 					  buffer  = 0,
 					  model2D = "IHP",
 					  Ndist   = "fixed",
-					  Nbuffer = local$N,
+					  Nbuffer = localpar$N,
 					  details = list(D = D, p=0.5, A=0.25, rescale=TRUE))
 popargs3f <- extend(basepopargs3f, values = list(A = Alevels, p = c(0.25, 0.5)) )
 ```
@@ -184,7 +188,7 @@ And plot an example with mu = 32 and scale = 2:
 set.seed(12345)
 pop <- do.call(sim.popn, popargs2[[18]])
 plot(pop)                   # AC
-plot(local$traps, add = TRUE)   # detectors
+plot(localpar$traps, add = TRUE)   # detectors
 ```
 
 Further execution of the example is suppressed by default, but can be cut-and-pasted into an R session. 
@@ -303,14 +307,14 @@ sum2M  <- summary_M(sims2M)
 sum3M  <- summary_M(sims3M)
 
 # vs global density
-sum1MT <- summary_M(sims1M, true = local$D)
-sum2MT <- summary_M(sims2M, true = local$D)
-sum3MT <- summary_M(sims3M, true = local$D)
+sum1MT <- summary_M(sims1M, true = localpar$D)
+sum2MT <- summary_M(sims2M, true = localpar$D)
+sum3MT <- summary_M(sims3M, true = localpar$D)
 
 # conditional likelihood (for COV(a) etc.)
-sum1MCL <- summary_MCL(sims1MCL, true = local$D)
-sum2MCL <- summary_MCL(sims2MCL, true = local$D)
-sum3MCL <- summary_MCL(sims3MCL, true = local$D)
+sum1MCL <- summary_MCL(sims1MCL, true = localpar$D)
+sum2MCL <- summary_MCL(sims2MCL, true = localpar$D)
+sum3MCL <- summary_MCL(sims3MCL, true = localpar$D)
 ```
 
 ```{r savesummary, echo = FALSE, eval = FALSE}
@@ -392,8 +396,8 @@ sims2CfCL <- run_all(1000, popargs2f[1:6], CH.function = "sim.cohesion", detargs
 ```
 
 ```{r cohesion1, eval = FALSE, echo = FALSE}
-sum2CCL <- summary_MCL(sims2CCL, true = local$D)
-sum2CfCL <- summary_MCL(sims2CfCL, true = local$D)
+sum2CCL <- summary_MCL(sims2CCL, true = localpar$D)
+sum2CfCL <- summary_MCL(sims2CfCL, true = localpar$D)
 ```
 
 # References
@@ -450,9 +454,9 @@ summary_M(sims3fM) # Random habitat fixed N(A)
 
 Summarise relative to global density --
 ```{r summaryMprint2, eval = TRUE}
-summary_M(sims1M, true = local$D) # LGCP Poisson N(A)
-summary_M(sims2M, true = local$D) # Thomas Poisson N(A)
-summary_M(sims3M, true = local$D) # Random habitat Poisson N(A)
+summary_M(sims1M, true = localpar$D) # LGCP Poisson N(A)
+summary_M(sims2M, true = localpar$D) # Thomas Poisson N(A)
+summary_M(sims3M, true = localpar$D) # Random habitat Poisson N(A)
 ```
 
 ## Model fitted, conditional likelihood
@@ -466,8 +470,8 @@ summary_MCL(sims3MCL) # Random habitat Poisson N(A)
 ## Model fitted, conditional likelihood, complete cohesion
 
 ```{r cohesion2, eval = TRUE}
-summary_MCL(sims2CCL, true = local$D)   # Thomas cluster process
-summary_MCL(sims2CfCL, true = local$D)  # fixed cluster process
+summary_MCL(sims2CCL, true = localpar$D)   # Thomas cluster process
+summary_MCL(sims2CfCL, true = localpar$D)  # fixed cluster process
 ```
 
 # Finally...
