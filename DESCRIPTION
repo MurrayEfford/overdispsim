@@ -1,16 +1,13 @@
 Package: overdispsim
 Type: Package
 Title: Simulations of Overdispersion in SECR
-Version: 0.0.2
-Date: 2025-02-16
+Version: 0.0.3
+Date: 2025-04-01
 Description: Code used to simulate overdispersion for paper by Efford and Fletcher.
 Authors@R: c(person("Murray", "Efford", 
     email = "murray.efford@otago.ac.nz", 
     role = c("aut","cre"), 
-    comment = c(ORCID = "0000-0001-5231-5184")),
-    person("David", "Fletcher", 
-    email = "davidatkaritane@gmail.com", 
-    role = c("aut")))
+    comment = c(ORCID = "0000-0001-5231-5184")))
 Depends: R (>= 3.5.0), secr, secrdesign (>= 2.8.2)
 Imports: parallel
 Suggests: knitr, rmarkdown, RandomFields, zen4R
@@ -18,6 +15,6 @@ VignetteBuilder: knitr
 Vignettes:
   overdispsim-vignette: overdispsim-vignette.Rmd
 License: GPL (>= 2)
-Lazydata: yes
+LazyData: yes
 URL: https://github.com/MurrayEfford/overdispsim
 BugReports: https://github.com/MurrayEfford/overdispsim/issues
