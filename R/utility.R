@@ -36,11 +36,12 @@ Bucl <- function (p, n, alpha=0.05)
 }
 
 addCL <- function (x, summ, cov = 'COV', nrepl = 1000, ...) {
-	nrepl <- nrepl * summ['notNA',]
+	# nrepl <- summ['notNA','nvalid']
+	nrepl <- summ[,'nvalid']
 	if (cov == 'RB') {
-		segments (x, summ['RB',]-2*summ['seRB',], x, summ['RB', ]+2*summ['seRB',])
+		segments (x, summ[,'RB']-2*summ[,'seRB'], x, summ[,'RB']+2*summ[,'seRB'])
 	}
 	else {
-		segments (x, Blcl(summ[cov,],nrepl, ...), x, Bucl(summ[cov, ],nrepl, ...))
+		segments (x, Blcl(summ[,cov],nrepl, ...), x, Bucl(summ[,cov],nrepl, ...))
 	}
 }
