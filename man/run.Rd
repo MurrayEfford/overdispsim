@@ -36,6 +36,17 @@ run_all(nrepl, popargs, CH.function = "sim.capthist", detargs = list(savepopn = 
 
 Arguments generally follow \code{\link[secrdesign]{run.scenarios}}.
 
+The number of threads is determined by .local$maxncores (see code).
+
+By default, 'extractfn' is chosen depending on fit and CL:
+
+\tabular{lll}{
+fit \tab CL \tab extractfn \cr
+FALSE \tab ------- \tab extract_n \cr
+TRUE \tab FALSE \tab extractfn_M \cr
+TRUE \tab TRUE \tab extractfn_MCL \cr
+}
+
 }
 
 \value{
