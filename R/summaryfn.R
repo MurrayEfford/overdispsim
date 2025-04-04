@@ -34,9 +34,9 @@ summary_n <- function (sims, Evar = NULL) {
 	}
 	parmlevels <- sapply(sims$pop.args,'[[','details')
 	parmlevels <- parmlevels[rownames(parmlevels) %in% c('var','scale','mu','scale','p','A'),]
-	
 	out <- do.call(rbind, lapply(sims$output, onescenario))
-	cbind(t(parmlevels), out)
+	out <- cbind(t(parmlevels), out)
+	apply(out,2,as.numeric)
 }
 
 # summarise fitted models
