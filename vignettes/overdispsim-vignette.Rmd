@@ -225,7 +225,7 @@ Here we generate SECR samples, count the number of detected individuals $n$ and
 compute the $\hat c$ measure of overdispersion using the known detection parameters. 
 Models are not fitted.
 
-```{r samplingonly, eval = runsimulations, cache = TRUE, warning = FALSE, message = FALSE}
+```{r samplingonly, eval = runsimulations, warning = FALSE, message = FALSE}
 # Poisson N(A)
 sims1 <- run_all(nrepl_n, popargs1, fit = FALSE)
 sims2 <- run_all(nrepl_n, popargs2, fit = FALSE)
@@ -241,7 +241,7 @@ sims3f <- run_all(nrepl_n, popargs3f, fit = FALSE)
 
 Here we select a subset of the defined population scenarios.
 
-```{r modelfits, eval = runsimulations, cache = TRUE, warning = FALSE, message = FALSE}
+```{r modelfits, eval = runsimulations, warning = FALSE, message = FALSE}
 # Poisson N(A)
 sims1M <- run_all(nrepl_M, popargs1[13:18],  fit = TRUE)
 sims2M <- run_all(nrepl_M, popargs2[13:18], fit = TRUE, 
@@ -261,7 +261,7 @@ The SECR model was fitted by maximising the conditional likelihood as a convenie
 way in **secr** to simulate the coverage of confidence intervals for the effective
 sampling area $a(\hat \theta)$ and the proportion of variance due to $n$ and $a(\hat \theta)$.
 
-```{r CLfit, eval = runsimulations, cache = TRUE, warning = FALSE, message = FALSE}
+```{r CLfit, eval = runsimulations, warning = FALSE, message = FALSE}
 # Poisson N
 sims1MCL <- run_all(nrepl_M, popargs1[13:18], fit = TRUE, CL = TRUE)
 sims2MCL <- run_all(nrepl_M, popargs2[13:18], fit = TRUE, CL = TRUE,
@@ -391,7 +391,7 @@ Table 2. Simulations with complete within-cluster cohesion.
 2CCL | Thomas process | conditional likelihood | extract_M |
 2CfCL| fixed cluster process | conditional likelihood | extract_M |
 
-```{r cohesion, eval = runsimulations, cache = TRUE, warning = FALSE, message = FALSE}
+```{r cohesion, eval = runsimulations, warning = FALSE, message = FALSE}
 detargs <- list (savepopn = TRUE, gamma = 1)  # complete cohesion
 # No fit
 sims2C <- run_all(nrepl_n, popargs2, CH.function = "sim.cohesion", detargs = detargs,
@@ -461,7 +461,7 @@ Further execution of the example is suppressed by default, but can be cut-and-pa
 
 Messages are suppressed.
 
-```{r example1, message = FALSE, cache = TRUE, eval = runexamples}
+```{r example1, message = FALSE, eval = runexamples}
 sims <- run_all(nrepl = 100, pops, fit = FALSE)
 summary_n(sims)
 ```
@@ -469,7 +469,7 @@ summary_n(sims)
 ## Model fit
 
 Using the same population scenarios -
-```{r example2, message = FALSE, cache = TRUE, warning = FALSE, eval = runexamples}
+```{r example2, message = FALSE, warning = FALSE, eval = runexamples}
 simsM <- run_all(nrepl = 10, pops, fit = TRUE)  
 summary_M(simsM)                     
 ```
