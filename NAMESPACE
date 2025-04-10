@@ -6,7 +6,6 @@ importFrom("stats", "predict", "qnorm", "runif", "sd", "sigma", "var")
 importFrom("parallel", "detectCores")
 
 export(extend)
-export(myRF)
 export(setparameters)
 
 export(extract_n)

@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^extra$
+^oldcode$
+^olddata$
 ^Matrix$
 README.md
-^olddata$

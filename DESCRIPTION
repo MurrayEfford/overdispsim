@@ -10,7 +10,7 @@ Authors@R: c(person("Murray", "Efford",
     comment = c(ORCID = "0000-0001-5231-5184")))
 Depends: R (>= 3.5.0), secr, secrdesign (>= 2.8.2)
 Imports: parallel
-Suggests: knitr, rmarkdown, RandomFields, zen4R
+Suggests: knitr, rmarkdown, zen4R
 VignetteBuilder: knitr
 Vignettes:
   overdispsim-vignette: overdispsim-vignette.Rmd

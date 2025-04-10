@@ -1,4 +1,4 @@
-Changes in version 1.0.0 (2025-04-10)
+Changes in version 1.0.0 (2025-04-11)
 
 New features or changed behaviour of old functions
     o   export addCL()
@@ -11,6 +11,7 @@ Other
     o   renamed setlocalparameters to setparameters
     o   removed spurious extdata
     o   removed data objects (summaries)
+    o   dropped function myRF
 
 Changes in version 0.0.2 (2025-02-16)
 
