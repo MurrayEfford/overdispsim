@@ -25,6 +25,6 @@ vignette('overdispsim-vignette', 'overdispsim')
 
 ### References
 
-Efford, M. G. (2025) Simulations of overdispersed activity centres in spatially explicit capture-recapture [Data set]. Zenodo. https://doi.org/10.5281/zenodo.14873670
+Efford, M. G. (2025) Simulations of overdispersed activity centres in spatially explicit capture-recapture [Data set]. Zenodo. https://doi.org/10.5281/zenodo.14873669
 
 Efford MG, Fletcher D 2024. Effect of spatial overdispersion on confidence intervals for population density estimated by spatial capture-recapture. bioRxiv https://doi.org/10.1101/2024.03.12.584742 

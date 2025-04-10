@@ -34,13 +34,13 @@ List of argument lists for \code{\link{sim.popn}}.
 
 \seealso{
 
-\code{\link{setlocalparameters}}
+\code{\link{setparameters}}
 
 }
 
 \examples{
 
-localpar <- setlocalparameters()
+localpar <- setparameters()
 basepopargs3 <- list(D = randomDensity, 
 					 core = localpar$mask,
 					 buffer = 0,

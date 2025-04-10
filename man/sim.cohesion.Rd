@@ -5,7 +5,10 @@
 
 \description{
 
-Simulates detection of a clustered population with cohesion of detection sensu Bischof et al. (2020). The main use is to replace \code{\link{sim.capthist}} in the \pkg{secrdesign} function \code{\link{run.scenarios}}, as called by \code{\link{run_all}}.
+Simulates detection of a clustered population with cohesion of detection sensu
+Bischof et al. (2020). The main use is to replace \code{\link{sim.capthist}} 
+in the \pkg{secrdesign} function \code{\link{run.scenarios}}, as called by 
+\code{\link{run_all}}.
 
 }
 
@@ -31,7 +34,8 @@ sim.cohesion(traps, popn, detectfn = 0, detectpar = list(), noccasions = 5,
 
 The argument gamma controls the degree of cohesion.
 
-The popn argument should be a clustered population with saved attributes `parents' and `parentid'.
+The popn argument should be a clustered population with saved attributes 
+`parents' and `parentid'.
 
 }
 
@@ -43,7 +47,9 @@ A capthist object.
 
 \references{
 
-Bischof, R., Dupont, P., Milleret, C., Chipperfield, J., and Royle, J. A. (2020) Consequences of ignoring group association in spatial capture--recapture analysis. *Wildlife Biology* wlb.00649. DOI 10.2981/wlb.00649
+Bischof, R., Dupont, P., Milleret, C., Chipperfield, J., and Royle, J. A. (2020)
+Consequences of ignoring group association in spatial capture--recapture analysis.
+\emph{Wildlife Biology} wlb.00649. \doi{10.2981/wlb.00649}
 
 }
 

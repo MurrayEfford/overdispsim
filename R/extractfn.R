@@ -7,37 +7,42 @@
 
 extract_n <- function (ch, distribution = "poisson") {
 	pop <- attr(ch, "popn")
-	Lambda <- covariates(attr(pop, 'Lambda'))$Lambda
-	if (!is.null(Lambda)) {
-		# ASSUMES pd applies unchanged when Lambda is a mask
-		localD <- sum(.local$pd * Lambda) / sum(.local$pd)
+	# Lambda <- covariates(attr(pop, 'Lambda'))$Lambda
+	# if (!is.null(Lambda)) {
+	# 	# ASSUMES pd applies unchanged when Lambda is a mask  UNSAFE IF DIM CHANGE
+	# 	localD <- sum(.local$pd * Lambda) / sum(.local$pd)
+	# }
+	# else {
+	localD <- NA
+	tr <- traps(ch)
+	# dodge fast proximity collapse to 1 occasion
+	usage(tr) <- NULL
+	if (distribution == 'binomial') {
+		a <- sum(.local$pd) * attr(.local$mask, 'area')
+		localD <- sum(pdot(pop, tr, 
+						   detectpar = .local$detectpar, 
+						   detectfn = 'HHN', noccasions = .local$noccasions)) / a
 	}
 	else {
-		localD <- NA
-		tr <- traps(ch)
-		# dodge fast proximity collapse to 1 occasion
-		usage(tr) <- NULL
-		if (distribution == 'binomial') {
-			a <- sum(.local$pd) * attr(.local$mask, 'area')
-			localD <- sum(pdot(pop, tr, 
-							   detectpar = .local$detectpar, 
-							   detectfn = 'HHN', noccasions = .local$noccasions)) / a
+		
+		msk <- attr(pop, 'Lambda')
+		if (is.null(msk)) {
+			msk <- attr(pop, 'mask')
+			Lambda <- covariates(msk)$D
 		}
 		else {
-			msk <- attr(pop, 'mask')
-			maskD <- covariates(msk)$D
-			if (!is.null(maskD)) {  # saved randomDensity
-				pd <- pdot(msk, tr, detectfn = 'HHN', 
-						   detectpar = .local$detectpar, 
-						   noccasions = .local$noccasions)
-				localD <- sum(pd * maskD) / sum(pd)
-			}
-			else {
-				localD <- .local$N / maskarea(msk)
-			}
+			Lambda <- covariates(msk)$Lambda
+		}
+		if (!is.null(Lambda)) {  # saved randomDensity
+			pd <- pdot(msk, tr, detectfn = 'HHN', 
+					   detectpar = .local$detectpar, 
+					   noccasions = .local$noccasions)
+			localD <- sum(pd * Lambda) / sum(pd)
+		}
+		else {
+			localD <- .local$N / maskarea(msk)   # global density
 		}
 	}
-
 	N <- nrow(pop)   # may be saved in run.scenarios det.args = list(savepopn=TRUE)
 	if (is.null(N)) N <- NA
 	n <- nrow(ch)

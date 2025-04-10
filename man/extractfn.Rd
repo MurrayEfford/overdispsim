@@ -8,7 +8,8 @@
 
 \description{
 
-Functions to extract summary statistics from each replicate.
+Functions to extract summary statistics from each replicate. 
+Used by \code{\link{run_all}} in call to \code{\link[secrdesign]{run.scenarios}}.
 
 }
 
@@ -41,7 +42,7 @@ For extract_n, a numeric vector
    n \tab number of detected individuals \cr
    chatnk \tab Fletcher's c-hat \cr
    N \tab number of simulated individuals \cr
-   localD \tab \cr
+   localD \tab detection-weighted local density\cr
 }
 
 For extract_M, a list with components: 
@@ -53,7 +54,7 @@ For extract_M, a list with components:
    pred \tab table of estimates from predict() \cr
    predF \tab table of estimates with variance adustment using Fletcher's c-hat \cr
    predW \tab table of estimates with variance adustment using Wedderburn c-hat \cr
-   trueD \tab detection-adjusted true density \cr
+   trueD \tab detection-weighted true density \cr
 }
 
 For extract_MCL, a list with components: 
@@ -63,7 +64,7 @@ For extract_MCL, a list with components:
    n \tab number of detected individuals \cr
    chatnk \tab Fletcher's c-hat \cr
    derived \tab table of estimates from derived() \cr
-   trueD \tab detection-adjusted true density \cr
+   trueD \tab detection-weighted true density \cr
 }
 
 }

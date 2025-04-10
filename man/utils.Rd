@@ -26,7 +26,7 @@ addCL(x, summ, cov = "COV", nrepl = 1000, ...)
 
 \details{
 
-Nothing yet.
+A binomial interval is computed for COV. Intervals are otherwise +/- 2SE.
 
 }
 

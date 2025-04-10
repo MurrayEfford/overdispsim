@@ -1,6 +1,6 @@
 ---
 title: '**overdispsim** - Simulations of Overdispersion in SECR'
-author: "Murray Efford and David Fletcher"
+author: "Murray Efford"
 date: "`r Sys.Date()`"
 output: 
   html_document: 
@@ -19,23 +19,37 @@ vignette: >
 
 This vignette explains some of the functions in the package **overdispsim** and 
 provides code for simulations in the paper of Efford and Fletcher (2024). 
+**overdispsim** uses the R packages **secr** (Efford 2025a) and 
+**secrdesign** (Efford 2025b) available from the CRAN repository. **overdispsim** itself is available on [GitHub] and Zenodo. 
 
-Simulations are re-run if the variable 'runsimulations' is set to TRUE; 
-otherwise the simulations are downloaded from Zenodo (Efford 2025).
+The research question concerns the effect of the distribution of animal activity 
+centres (AC) on estimates from spatially explicit capture--recapture models, 
+specifically the maximum-likelihood estimates of population density provided by 
+R package **secr**.
 
-**overdispsim** uses the R packages **secr** (Efford 2023a) and 
-**secrdesign** (Efford 2023b) available from the CRAN repository. 
+The scenarios considered are a superset of those reported by Efford and Fletcher (2024). 
+To reproduce the specific results in Efford and Fletcher (2024) see the file 'Figures.R'.
 
-Three processes are simulated for the distribution of activity centres (AC): a log-Gaussian Cox process (LGCP), a Thomas cluster process and a random binary habitat mosaic.
+Three base processes are simulated for the distribution of AC:
 
-Functions `rLGCP` and `rThomas` from the **spatstat** package (Baddeley et al. 2015) are used where possible. The algorithm for `rLGCP` in **spatstat.random** changed in version 3.2.1 (Oct 2023) to avoid dependence on **RandomFields**. Simulations here were run with the earlier code and may differ (see warning in `?spatstat.random::rLGCP`).
+1. log-Gaussian Cox process (LGCP), 
+2. Thomas cluster process, and 
+3. random binary habitat mosaic.
 
-However, simulations conditional on $N(A)$ (the fixed number in buffered area $A$) required custom code for LGCP (the exported function `myRF`). Package **RandomFields** (Schlather et al. 2015) is required for LGCP simulations 
-with `myRF`. Package **RandomFields** is not currently on CRAN. It may be installed with this code:
-	
-```
-install.packages("RandomFields", repos = "https://spatstat.r-universe.dev")
-```
+Each process is simulated both unconditionally and conditional on $N(A)$ 
+(i.e. fixed number in a buffered area $A$). The unconditional simulations result 
+in Poisson-distributed N(A). Conditional simulations are 
+identified by the suffix 'f'. Thus there are 6 distinct processes 
+(1, 2, 3, 1f, 2f, 3f). Each process is simulated over a range of parameter values.
+
+This vignette provides both the code to run the simulations, given the R package **overdispsim**, and tables summarising the resulting simulations. Simulations are re-run if the variable 'runsimulations' is set to TRUE; 
+otherwise, summaries are based on previous simulations downloaded from Zenodo (Efford 2025c) or possibly a local directory..
+
+# Dependence on other packages
+
+Packages **secr** and **secrdesign** are used throughout for simulation and model fitting.
+
+Functions `rLGCP` and `rThomas` from the **spatstat** package (Baddeley et al. 2015) are used where possible. The algorithm for `rLGCP` in **spatstat.random** changed in version 3.2.1 (Oct 2023) to avoid dependence on **RandomFields**. Some simulations here were run with the earlier code and may differ (see warning in `?spatstat.random::rLGCP`). Conditional simulations with `rLGCP` require spatstat.random version >= 3.3.3.2 and secr version >= 5.2.2. These versions may be installed from R-universe if they are not yet on CRAN.
 
 The fixed cluster process of Bischof et al. (2020) was emulated using the **secr** function `sim.popn` with settings model2D = "cluster" and details$clone = "constant" (see below).
 
@@ -43,13 +57,25 @@ Package **zen4R** (Blondel 2024) is required to download simulations from Zenodo
 
 # Setup
 
+```{r setup0, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+options(width = 105) 
+```
+
 ```{r setup, warning = FALSE, message = FALSE}
 library(overdispsim, quietly = TRUE)
-library(zen4R)
 options(digits = 5)
 runsimulations <- FALSE   # set TRUE to run afresh
-runexamples <- FALSE
+runexamples    <- FALSE
+nrepl_n        <- 0 # 10000     zero causes load from localrepo or zenodoDOI    
+nrepl_M        <- 0 # 1000
+csvdir         <- NULL        # folder to save summaries as csv
+zenodoDOI      <- "10.5281/zenodo.14873669" # optionally retrieve all simulations
+localrepo      <- ""
 ```
+
+For testing set `runsimulations <- TRUE` and the number of replicates to a 
+small number e.g. 5.
 
 We next set some options by assigning variables to an environment ('.local') that is 
 available to other functions in the package, and incidentally keep a copy 
@@ -60,8 +86,7 @@ The function is run with these arguments automatically when the package is attac
 is capped at the number available if that is less than the given maxncores.
 
 ```{r setup2}
-
-localpar <- setlocalparameters(
+localpar <- setparameters(
 	lambda0     = 0.5,
 	sigma       = 1.0,
 	detectfn    = 'HHN',
@@ -70,123 +95,353 @@ localpar <- setlocalparameters(
 	maskspacing = 0.5,
 	maskbuffer  = 4,
 	N           = 256,
-	maxncores   = 18
+	maxncores   = 24
 )
 ```
 
-# Interesting derived quantities
-
-These are non-essential.
-
-```{r derived}
-
-# expected variance of binomial n
-a <- sum(localpar$pd * attr(localpar$mask, 'area'))
-p <- a / maskarea(localpar$mask)
-Evarn <- p * (1-p) * localpar$N
-
-# expected number of individuals detected
-En <- sum(localpar$pd) * attr(localpar$mask, 'area') * localpar$D
-
-# expected number of individuals at each detector
-enk <- Enk(D = localpar$D, localpar$mask, localpar$traps, detectfn = localpar$detectfn,
-		   detectpar = localpar$detectpar, noccasions = localpar$noccasions)
-```
+The list and environment include some derived quantities.
 
 # Define populations
 
 Start by specifying some vectors with varying levels of parameters:
+
 ```{r levels}
-Alevels  <- c(0.0625, 0.125, 0.25, 0.5, 0.75, 1.0) # randomHabitat A
 Vlevels  <- c(0, 0.125, 0.25, 0.5, 0.75, 1.0)      # LGCP variances
 mulevels <- c(1,2,4,8,16,32)                       # expected number per cluster   
+Alevels  <- c(0.0625, 0.125, 0.25, 0.5, 0.75, 1.0) # randomHabitat A
 ```
 
-## Poisson N(A)
+Next, for each process generate a list of arguments, one component for each 
+combination of parameter values. Each component is ultimately passed internally 
+to the **secr** function 'sim.popn' to simulate realisations of the distribution of AC.  
+
+## Unconditional (Poisson N(A))
 
 ```{r definepop}
-# LGCP
+# 1. LGCP
 basepopargs1 <- list(
-	D = localpar$D, 
-	core = localpar$mask,
-	buffer = 0,    # uses bounding box of mask
+	D       = localpar$D, 
+	core    = localpar$mask,
+	buffer  = 0,    # uses bounding box of mask
 	model2D = "rLGCP",
-	details = list(var = 0, scale = 5 * localpar$sigma, eps = spacing(localpar$mask), 
-				   saveLambda = TRUE))
-popargs1 <- extend(basepopargs1, values = list(var = Vlevels, 
-								scale = c(5,10) * localpar$sigma))
-#-------------------------------------------------------------------------------
+	details = list(var = 0, scale = 5 * localpar$sigma, 
+				   eps = spacing(localpar$mask), saveLambda = TRUE))
+popargs1 <- extend(basepopargs1, 
+				   values = list(var = Vlevels, scale = c(2,5,10) * localpar$sigma))
+t(sapply(popargs1, '[[', 'details'))
 
-# Thomas clustering
-basepopargs2 <- list(D = localpar$D, 
-					 core = localpar$mask,
-					 buffer = spacing(localpar$mask)/2,
-					 model2D = "rThomas",
-					 details = list(mu = 1, scale = localpar$sigma, eps = 
-					 			   	spacing(localpar$mask), saveLambda = TRUE))
-# rThomas requires scale>0
-popargs2 <- extend(basepopargs2, values = list(mu = mulevels, 
-								scale = c(1e-4, 1, 2, 4)*localpar$sigma))
+# 2. Thomas clustering
+basepopargs2 <- list(
+	D       = localpar$D, 
+	core    = localpar$mask,
+	buffer  = spacing(localpar$mask)/2,
+	model2D = "rThomas",
+	details = list(mu = 1, scale = localpar$sigma, eps = 
+				   	spacing(localpar$mask), saveLambda = TRUE))
+# rThomas requires scale>0, so use tiny value instead 1e-4
+popargs2 <- extend(basepopargs2, 
+				   values = list(mu = mulevels, scale = c(1e-4, 1, 2, 4)*localpar$sigma))
+t(sapply(popargs2, '[[', 'details'))
 
-#-------------------------------------------------------------------------------
-
-# random habitat 
-basepopargs3 <- list(D = randomDensity, 
-					 core = localpar$mask,
-					 buffer = 0,
-					 model2D = "IHP",
-					 details = list(D = localpar$D, p=0.5, A=0.25, rescale=TRUE))
-popargs3 <- extend(basepopargs3, values = list(A = Alevels, p = c(0.25, 0.5)) )
+# 3. random habitat 
+basepopargs3 <- list(
+	D       = randomDensity, 
+	core    = localpar$mask,
+	buffer  = 0,
+	model2D = "IHP",
+	details = list(D = localpar$D, p = 0.5, A = 0.25, rescale = TRUE))
+popargs3 <- extend(basepopargs3, 
+				   values = list(A = Alevels, p = c(0.25, 0.5)) )
+t(sapply(popargs3, '[[', 'details'))
 ```
 
-## Fixed N(A)
+## Conditional (fixed N(A))
+
+Modify each of the preceding scenarios by telling `sim.popn` to use fixed N.
+
+```{r fixfn}
+fix <- function(x) {
+	x$Ndist <- "fixed"
+	x$Nbuffer <- localpar$N
+	if (x$model2D == 'rThomas') {
+		x$model2D <- 'cluster'
+		x$details$clone <- 'constant'
+	}
+	x
+}
+```
 
 ```{r definepopfixed}
 
-# random field
-basepopargs1f <- list(
-	D = myRF, 
-	core = localpar$mask,
-	buffer = 0,
-	model2D = "IHP",
-	Ndist   = "fixed",
-	Nbuffer = localpar$N,
-	details = list(var = 1, scale = 1, N = localpar$N, eps = spacing(localpar$mask), 
-				   saveLambda = TRUE))
-popargs1f <- extend(basepopargs1f, values = list(var = Vlevels,
-								scale = c(5,10) * localpar$sigma))
-#-------------------------------------------------------------------------------
+# 1f. Conditional LGCP requires spatstat.random >= v3.3.3.2 and secr >= 5.2.2
+popargs1f <- lapply(popargs1, fix)
 
-# Clusters (constant size)
-# no algorithm for fixed-N rThomas?
+# 2f. Clusters (constant size)
+# no algorithm for fixed-N rThomas, so use this
+popargs2f <- lapply(popargs2, fix)
 # cf Bischof et al. fixed clusters (clone = "constant", scale = 0)
+# but allows varying scale
 
-basepopargs2f <- list(D = localpar$D, 
-					  core = localpar$mask,
-					  buffer = spacing(localpar$mask)/2,
-					  model2D = "cluster",
-					  Ndist   = "fixed",
-					  Nbuffer = localpar$N,
-					  details = list(mu = 1, scale = 1, clone = "constant",
-					  	eps = spacing(localpar$mask), saveLambda = TRUE))
-popargs2f <- extend(basepopargs2f, values = list(mu = mulevels, 
-								scale = c(0,1,2,4)*localpar$sigma))
-#-------------------------------------------------------------------------------
-
-# random habitat, fixed-N
-basepopargs3f <- list(D      = randomDensity, 
-					  core    = localpar$mask,
-					  buffer  = 0,
-					  model2D = "IHP",
-					  Ndist   = "fixed",
-					  Nbuffer = localpar$N,
-					  details = list(D = D, p=0.5, A=0.25, rescale=TRUE))
-popargs3f <- extend(basepopargs3f, values = list(A = Alevels, p = c(0.25, 0.5)) )
+# 3f. random habitat, fixed-N
+popargs3f <- lapply(popargs3, fix)
 ```
 
-# Example
+# Examples using defined populations
 
-Select a subset of cluster (Thomas process) population scenarios and extract the parameter levels for later use. 
+Rather than interrupt the flow here, refer to [Appendix 1](#appendix1).
+
+# Code for simulations in paper
+
+Here we list the commands used to generate the main results. 
+Sampling with each process (1, 2, 3, 1f, 2f, 3f) and parameter set is initially run many times without fitting a model in order to approximate the expected number of detected individuals etc. Then each sampling scenario is simulated and a model is fitted by maximising the full SECR likelihood (1M, 2M, 3M, 1Mf, 2Mf, 3Mf). A subset of scenarios is further simulated fitting only the conditional SECR likelihood (1MCL, 2MCL, 3MCL). 
+
+The function `run_all` from **overdispsim** is a wrapper for **secr** and **secrdesign** simulation functions that uses settings in the local environment. The argument 'extractfn' of `secrdesign::run.scenarios` is a different function for each of the three groups of simulations; these functions are defined in **overdispsim**.
+
+Each of these takes substantial time to run (hours). They should be run separately and saved for later processing (i.e. summary).
+
+Table 1. Simulations.
+
+| Code | AC distribution | Fit | extractfn | Note |
+|:-----|:-----------|:-----------|:-----------|:-----------------|
+1 | LGCP | none | extract_n |
+2 | Thomas process | none |extract_n |
+3 | random habitat | none |extract_n |
+1f | fixed-N(A) LGCP | none |extract_n |
+2f | fixed cluster process | none |extract_n |
+3f | fixed-N(A) random habitat | none |extract_n |
+1M | LGCP | full likelihood | extract_M |
+2M | Thomas process | full likelihood |  extract_M |
+3M | random habitat | full likelihood | extract_M |
+1fM | fixed-N(A) LGCP | full likelihood | extract_M |
+2fM | fixed cluster process | full likelihood | extract_M |
+3fM | fixed-N(A) random habitat | full likelihood | extract_M |
+1MCL | LGCP | conditional likelihood | extract_MCL |
+2MCL | Thomas process | conditional likelihood |  extract_MCL |
+3MCL | random habitat | conditional likelihood | extract_MCL |
+
+## Sampling only
+
+Here we generate SECR samples, count the number of detected individuals $n$ and 
+compute the $\hat c$ measure of overdispersion using the known detection parameters. 
+Models are not fitted.
+
+```{r samplingonly, eval = runsimulations, cache = TRUE, warning = FALSE, message = FALSE}
+# Poisson N(A)
+sims1 <- run_all(nrepl_n, popargs1, fit = FALSE)
+sims2 <- run_all(nrepl_n, popargs2, fit = FALSE)
+sims3 <- run_all(nrepl_n, popargs3, fit = FALSE)
+
+# Fixed N(A)
+sims1f <- run_all(nrepl_n, popargs1f, fit = FALSE)
+sims2f <- run_all(nrepl_n, popargs2f, fit = FALSE)
+sims3f <- run_all(nrepl_n, popargs3f, fit = FALSE)
+```
+
+## Full model fits (suffix M)
+
+Here we select a subset of the defined population scenarios.
+
+```{r modelfits, eval = runsimulations, cache = TRUE, warning = FALSE, message = FALSE}
+# Poisson N(A)
+sims1M <- run_all(nrepl_M, popargs1[13:18],  fit = TRUE)
+sims2M <- run_all(nrepl_M, popargs2[13:18], fit = TRUE, 
+			  start = list(D = 3000, lambda0 = 0.4, sigma = 2.2))
+sims3M <- run_all(nrepl_M, popargs3[7:12], fit = TRUE)
+
+# Fixed N(A)
+sims1fM <- run_all(nrepl_M, popargs1f[13:18], fit = TRUE, distribution = "binomial", 
+			   start = list(D = 5000))
+sims2fM <- run_all(nrepl_M, popargs2f[13:18], fit = TRUE, distribution = "binomial")
+sims3fM <- run_all(nrepl_M, popargs3f[7:12], fit = TRUE, distribution = "binomial")
+```
+
+## Conditional model fits (suffix MCL)
+
+The SECR model was fitted by maximising the conditional likelihood as a convenient
+way in **secr** to simulate the coverage of confidence intervals for the effective
+sampling area $a(\hat \theta)$ and the proportion of variance due to $n$ and $a(\hat \theta)$.
+
+```{r CLfit, eval = runsimulations, cache = TRUE, warning = FALSE, message = FALSE}
+# Poisson N
+sims1MCL <- run_all(nrepl_M, popargs1[13:18], fit = TRUE, CL = TRUE)
+sims2MCL <- run_all(nrepl_M, popargs2[13:18], fit = TRUE, CL = TRUE,
+				 start = list(D = 3000, lambda0 = 0.4, sigma = 2.2))
+sims3MCL <- run_all(nrepl_M, popargs3[7:12], fit = TRUE, CL = TRUE)
+```
+
+# Summaries
+
+Simulation results have been archived on Zenodo (Efford 2025c). If necessary, 
+we retrieve them with the R package **zen4R** (Blondel 2024).
+
+```{r zenodo, eval = !runsimulations, echo = TRUE}
+tmpfolder <- tempdir()
+if (file.exists(localrepo)) {
+	files_to_copy <- list.files(localrepo, full.names = TRUE)
+	file.copy(files_to_copy, tmpfolder)
+	reloadedfrom <- localrepo
+} else {
+	if (!requireNamespace('zen4R')) stop ("Package zen4R is required to download from Zenodo")
+	zen4R::download_zenodo(zenodoDOI, path = tmpfolder, quiet = TRUE)
+	reloadedfrom <- zenodoDOI
+}
+files <- list.files(path = tmpfolder, full.names = TRUE)
+files <- files[grepl('.rdata', tolower(files))]
+reloaded <- unlist(lapply(files, load, envir = .GlobalEnv))
+required <- c('sims1',    'sims2',    'sims3',
+			  'sims1f',   'sims2f',   'sims3f',
+			  'sims1M',   'sims2M',   'sims3M',
+			  'sims1fM',  'sims2fM',  'sims3fM',
+			  'sims1MCL', 'sims2MCL', 'sims3MCL',
+			  'sims2C',   'sims2CCL', 'sims2Cf', 'sims2CfCL'
+			  )
+if (!all(required %in% reloaded)) {
+	warning ("Could not reload all required simulations")
+} else {
+	cat ("successfully reloaded all required files from ", reloadedfrom, "\n")
+}
+```
+
+Now summarise the simulations. The summary tables are printed in [Appendix 2](#appendix2).
+
+```{r summaryM, eval = TRUE}
+# no fit
+sum1  <- summary_n(sims1)
+sum2  <- summary_n(sims2)
+sum3  <- summary_n(sims3)
+sum1f  <- summary_n(sims1f)
+sum2f  <- summary_n(sims2f)
+sum3f  <- summary_n(sims3f)
+
+# vs detection-weighted local density
+sum1M  <- summary_M(sims1M)
+sum2M  <- summary_M(sims2M)
+sum3M  <- summary_M(sims3M)
+sum1fM  <- summary_M(sims1fM)
+sum2fM  <- summary_M(sims2fM)
+sum3fM  <- summary_M(sims3fM)
+
+# vs global density
+sum1MT <- summary_M(sims1M, true = localpar$D)
+sum2MT <- summary_M(sims2M, true = localpar$D)
+sum3MT <- summary_M(sims3M, true = localpar$D)
+sum1fMT <- summary_M(sims1fM, true = localpar$D)
+sum2fMT <- summary_M(sims2fM, true = localpar$D)
+sum3fMT <- summary_M(sims3fM, true = localpar$D)
+
+# conditional likelihood (for COV(a) etc.)
+sum1MCL <- summary_MCL(sims1MCL, true = localpar$D)
+sum2MCL <- summary_MCL(sims2MCL, true = localpar$D)
+sum3MCL <- summary_MCL(sims3MCL, true = localpar$D)
+```
+
+Summaries are optionally output to .csv:
+
+```{r csv, eval = TRUE, echo = TRUE}
+
+if (!is.null(csvdir)) {
+	
+	# no fit
+	write.csv(sum1, file= paste0(csvdir, '/sum1.csv'))
+	write.csv(sum2, file= paste0(csvdir, '/sum2.csv'))
+	write.csv(sum3, file= paste0(csvdir, '/sum3.csv'))
+	
+	# no fit, fixed N
+	write.csv(sum1f, file= paste0(csvdir, '/sum1f.csv'))
+	write.csv(sum2f, file= paste0(csvdir, '/sum2f.csv'))
+	write.csv(sum3f, file= paste0(csvdir, '/sum3f.csv'))
+	
+	# fitted model vs detection-weighted local density
+	write.csv(sum1M, file= paste0(csvdir, '/sum1M.csv'))
+	write.csv(sum2M, file= paste0(csvdir, '/sum2M.csv'))
+	write.csv(sum3M, file= paste0(csvdir, '/sum3M.csv'))
+	
+	# fitted model vs detection-weighted local density, fixed N
+	write.csv(sum1fM, file= paste0(csvdir, '/sum1fM.csv'))
+	write.csv(sum2fM, file= paste0(csvdir, '/sum2fM.csv'))
+	write.csv(sum3fM, file= paste0(csvdir, '/sum3fM.csv'))
+	
+	# fitted model vs global density
+	write.csv(sum1MT, file= paste0(csvdir, '/sum1MT.csv'))
+	write.csv(sum2MT, file= paste0(csvdir, '/sum2MT.csv'))
+	write.csv(sum3MT, file= paste0(csvdir, '/sum3MT.csv'))
+	
+	# fitted model vs global density, fixed N
+	write.csv(sum1fMT, file= paste0(csvdir, '/sum1fMT.csv'))
+	write.csv(sum2fMT, file= paste0(csvdir, '/sum2fMT.csv'))
+	write.csv(sum3fMT, file= paste0(csvdir, '/sum3fMT.csv'))
+	
+	# conditional likelihood (for COV(a) etc.)
+	write.csv(sum1MCL, file= paste0(csvdir, '/sum1MCL.csv'))
+	write.csv(sum2MCL, file= paste0(csvdir, '/sum2MCL.csv'))
+	write.csv(sum3MCL, file= paste0(csvdir, '/sum3MCL.csv'))
+}
+```
+
+# Cohesion
+
+Additional simulations were performed with overdispersion in the *detection* process. A novel function (`sim.cohesion`) is defined in **overdispsim** for simulating detection with variable within-cluster cohesion, ranging from none (gamma = 0) to complete (gamma = 1) (Bischof et al. 2020). This applies *only* to clustered AC.
+
+Table 2. Simulations with complete within-cluster cohesion.
+
+| Code | AC distribution | Fit | extractfn | Note |
+|:-----|:-----------|:-----------|:-----------|:-----------------|
+2C   | Thomas process | none | extract_n |
+2Cf  | fixed cluster process | none | extract_n |
+2CCL | Thomas process | conditional likelihood | extract_M |
+2CfCL| fixed cluster process | conditional likelihood | extract_M |
+
+```{r cohesion, eval = runsimulations, cache = TRUE, warning = FALSE, message = FALSE}
+detargs <- list (savepopn = TRUE, gamma = 1)  # complete cohesion
+# No fit
+sims2C <- run_all(nrepl_n, popargs2, CH.function = "sim.cohesion", detargs = detargs,
+			   fit = FALSE)
+sims2Cf <- run_all(nrepl_n, popargs2f, CH.function = "sim.cohesion", detargs = detargs,
+			   fit = FALSE)
+# Conditional likelihood fit (effect of cohesion on coverage of a-hat)
+sims2CCL <- run_all(nrepl_M, popargs2[1:6], CH.function = "sim.cohesion", detargs = detargs,
+			   fit = TRUE, CL = TRUE)
+sims2CfCL <- run_all(nrepl_M, popargs2f[1:6], CH.function = "sim.cohesion", detargs = detargs,
+				fit = TRUE, CL = TRUE)
+```
+
+```{r cohesion1, eval = TRUE}
+sum2C <- summary_n(sims2C)
+sum2Cf <- summary_n(sims2Cf)
+sum2CCL <- summary_MCL(sims2CCL, true = localpar$D)
+sum2CfCL <- summary_MCL(sims2CfCL, true = localpar$D)
+```
+
+# References
+
+Baddeley, A., Rubak, E., and Turner, R. (2015) *Spatial Point Patterns: Methodology and Applications with R*. Chapman and Hall/CRC Press, London.
+
+Bischof, R., Dupont, P., Milleret, C., Chipperfield, J., and Royle, J. A. (2020) Consequences of ignoring group association in spatial capture--recapture analysis. *Wildlife Biology* wlb.00649. DOI 10.2981/wlb.00649
+
+Blondel, E. (2024) zen4R: Interface to 'Zenodo' REST API. R package version
+  0.10. https://CRAN.R-project.org/package=zen4R/
+
+Borchers, D. L. and Efford, M. G. (2008) Spatially explicit maximum likelihood methods for capture--recapture studies. *Biometrics* **64**, 377--385.
+
+Efford, M. G. (2025a) secr: Spatially explicit capture--recapture models. R package version
+  5.2.2. https://CRAN.R-project.org/package=secr/
+
+Efford, M. G. (2025b) openCR: Spatially explicit capture--recapture models. R package version
+  2.9.3. https://CRAN.R-project.org/package=openCR/
+
+Efford, M. G. (2025c) Simulations of overdispersed activity centres in spatially explicit capture-recapture [Data set]. Zenodo. https://doi.org/10.5281/zenodo.14873669
+
+Efford, M. G. and Fletcher, D. (2024)  The effect of spatial overdispersion on confidence intervals for population density estimated by spatially explicit capture--recapture. bioRxiv https://doi.org/10.1101/2024.03.12.584742.
+
+Saura, S., and Martínez-Millán, J. (2000) Landscape patterns simulation with a modified random clusters method. *Landscape Ecology* **15**, 661--678.
+
+Schlather, M., Malinowski, A., Menck, P. J., Oesting, M., and Strokorb, K. (2015) Analysis, simulation and prediction of multivariate random fields with package RandomFields. *Journal of Statistical Software* **63**, 1--25. https://www.jstatsoft.org/v63/i08/
+
+# Appendix 1. Example {#appendix1}
+
+This is an aside, intended to show the code in action.
+
+First select a subset of cluster (Thomas process) population scenarios and extract the parameter levels for later use. 
 ```{r pops}
 sapply(popargs2, '[[', 'details')[1:2,]  # display parameter values
 pops <- popargs2[13:18]                  # select mu = 1..32, scale = 2
@@ -208,8 +463,7 @@ Messages are suppressed.
 
 ```{r example1, message = FALSE, cache = TRUE, eval = runexamples}
 sims <- run_all(nrepl = 100, pops, fit = FALSE)
-sumn <- summary_n(sims)
-sumn[,1:10]
+summary_n(sims)
 ```
 
 ## Model fit
@@ -220,266 +474,111 @@ simsM <- run_all(nrepl = 10, pops, fit = TRUE)
 summary_M(simsM)                     
 ```
 
-# Code for simulations in paper
-
-Here we list the commands used to generate the main results. Each of these takes substantial time to run (hours). They should be run separately and saved for later processing (i.e. summary).
-
-| Code | AC distribution | Fit | extractfn | Note |
------|-----------|-----------|-----------|-----------------
-1 | LGCP | none | extract_n |
-2 | Thomas process | none |extract_n |
-3 | random habitat | none |extract_n |
-1f | fixed-N(A) LGCP | none |extract_n |
-2f | fixed cluster process | none |extract_n |
-3f | fixed-N(A) random habitat | none |extract_n |
-1M | LGCP | full likelihood | extract_M |
-2M | Thomas process | full likelihood |  extract_M |
-3M | random habitat | full likelihood | extract_M |
-1Mf | fixed-N(A) LGCP | full likelihood | extract_M |
-2Mf | fixed cluster process | full likelihood | extract_M |
-3Mf | fixed-N(A) random habitat | full likelihood | extract_M |
-1MCL | LGCP | conditional likelihood | extract_MCL |
-2MCL | Thomas process | conditional likelihood |  extract_MCL |
-3MCL | random habitat | conditional likelihood | extract_MCL |
-
-## Sampling only
-
-Here we generate SECR samples, count the number of detected individuals $n$ and 
-compute $\hat c$ using the known detection parameters. Models are not fitted.
-
-```{r samplingonly, eval = runsimulations}
-
-nrepl <- 10000
-
-# Poisson N(A)
-sims1 <- run_all(nrepl, popargs1, fit = FALSE, byscenario = FALSE)
-sims2 <- run_all(nrepl, popargs2, fit = FALSE, byscenario = TRUE)
-sims3 <- run_all(nrepl, popargs3, fit = FALSE, byscenario = TRUE)
-
-# Fixed N(A)
-sims1f <- run_all(nrepl, popargs1f, fit = FALSE, byscenario = FALSE)
-# byscenarios = TRUE throws error
-sims2f <- run_all(nrepl, popargs2f, fit = FALSE, byscenario = TRUE)
-sims3f <- run_all(nrepl, popargs3f, fit = FALSE, byscenario = TRUE)
-```
-
-## Full model fits (suffix M)
-
-```{r modelfits, eval = runsimulations}
-
-nreplM <- 1000
-
-# Poisson N(A)
-sims1M <- run_all(nreplM, popargs1[7:12],  fit = TRUE)
-sims2M <- run_all(nreplM, popargs2[13:18], fit = TRUE, 
-			  start = list(D = 3000, lambda0 = 0.4, sigma = 2.2))
-sims3M <- run_all(nreplM, popargs3[7:12], fit = TRUE)
-
-# Fixed N(A)
-sims1fM <- run_all(nreplM, popargs1f[7:12], fit = TRUE, distribution = "binomial", 
-			   start = list(D = 5000))
-sims3fM <- run_all(nreplM, popargs3f[7:12], fit = TRUE, distribution = "binomial")
-sims2fM <- run_all(nreplM, popargs2f[7:12], fit = TRUE, distribution = "binomial")
-```
-
-## Summaries
-
-Simulation results have been archived on Zenodo (Efford 2025). If necessary, 
-we retrieve them with the R package **zen4R** (Blondel 2024).
-
-```{r zenodo, eval = !runsimulations, echo = TRUE}
-tmpfolder <- tempdir()
-zen4R::download_zenodo("10.5281/zenodo.14873670", path = tmpfolder, quiet = TRUE)
-files <- list.files(path = tmpfolder, full.names = TRUE)
-files <- files[grepl('.rdata', tolower(files))]
-reloaded <- unlist(lapply(files, load, envir = .GlobalEnv))
-# objects successfully reloaded:
-print(reloaded)
-```
-
-Now summarise the simulations
-
-```{r summaryM, eval = TRUE}
-
-# no fit
-sum1  <- summary_n(sims1)
-sum2  <- summary_n(sims2)
-sum3  <- summary_n(sims3)
-sum1f  <- summary_n(sims1f)
-sum2f  <- summary_n(sims2f)
-sum3f  <- summary_n(sims3f)
-
-# vs detection-weighted local density
-sum1M  <- summary_M(sims1M)
-sum2M  <- summary_M(sims2M)
-sum3M  <- summary_M(sims3M)
-
-# vs global density
-sum1MT <- summary_M(sims1M, true = localpar$D)
-sum2MT <- summary_M(sims2M, true = localpar$D)
-sum3MT <- summary_M(sims3M, true = localpar$D)
-
-# conditional likelihood (for COV(a) etc.)
-sum1MCL <- summary_MCL(sims1MCL, true = localpar$D)
-sum2MCL <- summary_MCL(sims2MCL, true = localpar$D)
-sum3MCL <- summary_MCL(sims3MCL, true = localpar$D)
-```
-
-```{r savesummary, echo = FALSE, eval = FALSE}
-# summaries were previously saved to data folder with this code
-
-# no fit
-save(sum1, file = 'data/sum1.RData')
-save(sum2, file = 'data/sum2.RData')
-save(sum3, file = 'data/sum3.RData')
-
-# no fit, fixed
-save(sum1f, file = 'data/sum1f.RData')
-save(sum2f, file = 'data/sum2f.RData')
-save(sum3f, file = 'data/sum3f.RData')
-
-# vs detection-weighted local density
-save(sum1M, file = 'data/sum1M.RData')
-save(sum2M, file = 'data/sum2M.RData')
-save(sum3M, file = 'data/sum3M.RData')
-
-# vs global density
-save(sum1MT, file = 'data/sum1MT.RData')
-save(sum2MT, file = 'data/sum2MT.RData')
-save(sum3MT, file = 'data/sum3MT.RData')
-
-# conditional likelihood (for COV(a) etc.)
-save(sum1MCL, file = 'data/sum1MCL.RData')
-save(sum2MCL, file = 'data/sum2MCL.RData')
-save(sum3MCL, file = 'data/sum3MCL.RData')
-
-```
-
-...and output to .csv.
-
-```{r csv, eval = FALSE, echo = FALSE}
-write.csv(sum1M, file='extra/sum1M.csv')
-write.csv(sum2M, file='extra/sum2M.csv')
-write.csv(sum3M, file='extra/sum3M.csv')
-
-write.csv(sum1MT, file='extra/sum1MT.csv')
-write.csv(sum2MT, file='extra/sum2MT.csv')
-write.csv(sum3MT, file='extra/sum3MT.csv')
-
-write.csv(sum1MCL, file='extra/sum1MCL.csv')
-write.csv(sum2MCL, file='extra/sum2MCL.csv')
-write.csv(sum3MCL, file='extra/sum3MCL.csv')
-```
-
-# CL
-
-The SECR model was fitted by maximising the conditional likelihood as a convenient
-way in **secr** to simulate the coverage of confidence intervals for the effective
-sampling area $a(\hat \theta)$ and the proportion of variance due to $n$ and $a(\hat \theta)$.
-
-```{r CLfit, eval = runsimulations}
-# Poisson N
-sims1MCL <- run_all(1000, popargs1[7:12], fit = TRUE, CL = TRUE)
-sims2MCL <- run_all(1000, popargs2[13:18], fit = TRUE, CL = TRUE,
-				 start = list(D = 3000, lambda0 = 0.4, sigma = 2.2))
-sims3MCL <- run_all(1000, popargs3[7:12], fit = TRUE, CL = TRUE)
-```
-
-# Cohesion
-
-Additional simulations were performed with overdispersion in the detection process. A novel function (`sim.capthist`) is defined for simulating detection with variable within-cluster cohesion, ranging from none (gamma = 0) to complete (gamma = 1). This applies *only* to clustered AC.
-
-```{r cohesion, eval = runsimulations}
-detargs <- list (savepopn = TRUE, gamma = 1)  # complete cohesion
-# No fit
-sims2C <- run_all(10000, popargs2, CH.function = "sim.cohesion", detargs = detargs,
-			   fit = FALSE, byscenario = TRUE)
-sims2Cf <- run_all(10000, popargs2f, CH.function = "sim.cohesion", detargs = detargs,
-			   fit = FALSE, byscenario = TRUE)
-# Conditional likelihood fit (effect of cohesion on coverage of $\hat a$)
-sims2CCL <- run_all(1000, popargs2[1:6], CH.function = "sim.cohesion", detargs = detargs,
-			   fit = TRUE, CL = TRUE, byscenario = FALSE)
-sims2CfCL <- run_all(1000, popargs2f[1:6], CH.function = "sim.cohesion", detargs = detargs,
-				fit = TRUE, CL = TRUE, byscenario = FALSE)
-```
-
-```{r cohesion1, eval = FALSE, echo = FALSE}
-sum2CCL <- summary_MCL(sims2CCL, true = localpar$D)
-sum2CfCL <- summary_MCL(sims2CfCL, true = localpar$D)
-```
-
-# References
-
-Baddeley, A., Rubak, E., and Turner, R. (2015) *Spatial Point Patterns: Methodology and Applications with R*. Chapman and Hall/CRC Press, London.
-
-Bischof, R., Dupont, P., Milleret, C., Chipperfield, J., and Royle, J. A. (2020) Consequences of ignoring group association in spatial capture--recapture analysis. *Wildlife Biology* wlb.00649. DOI 10.2981/wlb.00649
-
-Blondel, E. (2024) zen4R: Interface to 'Zenodo' REST API. R package version
-  0.10. https://CRAN.R-project.org/package=zen4R/
-
-Borchers, D. L. and Efford, M. G. (2008) Spatially explicit maximum likelihood methods for capture--recapture studies. *Biometrics* **64**, 377--385.
-
-Efford, M. G. (2023a) secr: Spatially explicit capture--recapture models. R package version
-  4.6.4. https://CRAN.R-project.org/package=secr/
-
-Efford, M. G. (2023b) openCR: Spatially explicit capture--recapture models. R package version
-  2.2.6. https://CRAN.R-project.org/package=openCR/
-
-Efford, M. G. (2025) Simulations of overdispersed activity centres in spatially explicit capture-recapture [Data set]. Zenodo. https://doi.org/10.5281/zenodo.14873670
-
-Efford, M. G. and Fletcher, D. (2024)  The effect of spatial overdispersion on confidence intervals for population density estimated by spatially explicit capture--recapture. bioRxiv https://doi.org/10.1101/2024.03.12.584742.
-
-Saura, S., and Martínez-Millán, J. (2000) Landscape patterns simulation with a modified random clusters method. *Landscape Ecology* **15**, 661--678.
-
-Schlather, M., Malinowski, A., Menck, P. J., Oesting, M., and Strokorb, K. (2015) Analysis, simulation and prediction of multivariate random fields with package RandomFields. *Journal of Statistical Software* **63**, 1--25. https://www.jstatsoft.org/v63/i08/
-
-# Appendix 1. Simulation summaries {#appendix1}
+# Appendix 2. Simulation summaries {#appendix2}
 
 ## No model
 
-```{r summarynprint, eval = TRUE}
-summary_n(sims1) # LGCP Poisson N(A)
-summary_n(sims2) # Thomas Poisson N(A)
-summary_n(sims3) # Random habitat Poisson N(A)
+| Column | Description |
+|:-------------|:------------------------------------------------|	
+[var, scale etc.] | Parameters specific to the scenarios |
+varration | Ratio var(n) / mean(n) |
+chatF | Mean 'Fletcher-chat' for count \eqn{n_k} (individuals per detector) |
+chatW | Mean 'Wedderburn-chat' for count \eqn{n_k} (individuals per detector) |
+Nsim | number of datasets simulated |
+N | mean number of individuals in simulated population |
+varN | variance of number of individuals in simulated population |
+n | mean number of individuals detected |
+varn | variance of number of individuals detected |
+localD | mean of detection-weighted density |
+varlocalD | variance of detection-weighted density |
+VRlocalD | variance ratio from localD : (varlocalD/localD^2 + 1/En) / (1/En) |
 
-summary_n(sims1f) # LGCP fixed N(A)
-summary_n(sims2f) # Fixed cluster process
-summary_n(sims3f) # Random habitat fixed N(A)
+```{r summarynprint, eval = TRUE}
+sum1 # LGCP Poisson N(A)
+sum2 # Thomas Poisson N(A)
+sum3 # Random habitat Poisson N(A)
+
+sum1f # LGCP fixed N(A)
+sum2f # Fixed cluster process
+sum3f # Random habitat fixed N(A)
 ```
 
 ## Model fitted
 
+| Column | Description |
+|:-------------|:------------------------------------------------|	
+[var, scale etc.] | Parameters specific to the scenarios |
+n | mean number of individuals detected |
+N | mean number of individuals in simulated population |
+nvalid | number of successful simulations |
+estimate | mean estimated density |
+SE.estimate | mean SE of estimate |
+RSE | ratio of preceding |
+trueD | true density; either detection-weighted (default) or global as specified by the 'true' argument|
+RB | estimated relative bias relative to trueD |
+seRB | SE of RB |
+COV | unadjusted coverage of 95\% interval relative to trueD |
+COVF | adjusted coverage |
+chatF | mean 'Fletcher-chat' for count \eqn{n_k} (individuals per detector) |
+varration | Ratio var(n) / mean(n) |
+
 Summarise relative to local density --
 ```{r summaryMprint1, eval = TRUE}
-summary_M(sims1M) # LGCP Poisson N(A)
-summary_M(sims2M) # Thomas Poisson N(A)
-summary_M(sims3M) # Random habitat Poisson N(A)
+sum1M # LGCP Poisson N(A)
+sum2M # Thomas Poisson N(A)
+sum3M # Random habitat Poisson N(A)
 
-summary_M(sims1fM) # LGCP fixed N(A)
-summary_M(sims2fM) # Fixed cluster process
-summary_M(sims3fM) # Random habitat fixed N(A)
+sum1fM # LGCP fixed N(A)
+sum2fM # Fixed cluster process
+sum3fM # Random habitat fixed N(A)
 ```
 
 Summarise relative to global density --
 ```{r summaryMprint2, eval = TRUE}
-summary_M(sims1M, true = localpar$D) # LGCP Poisson N(A)
-summary_M(sims2M, true = localpar$D) # Thomas Poisson N(A)
-summary_M(sims3M, true = localpar$D) # Random habitat Poisson N(A)
+sum1MT # LGCP Poisson N(A)
+sum2MT # Thomas Poisson N(A)
+sum3MT # Random habitat Poisson N(A)
+
+sum1fMT # LGCP Poisson N(A)
+sum2fMT # Thomas Poisson N(A)
+sum3fMT # Random habitat Poisson N(A)
 ```
 
 ## Model fitted, conditional likelihood
 
+| Column | Description |
+|:-------------|:------------------------------------------------|	
+[var, scale etc.] | Parameters specific to the scenarios |
+n | mean number of individuals detected |
+nvalid | number of successful simulations |
+estimate | mean estimated density |
+SE.estimate | mean SE of estimate |
+RSE | ratio of preceding |
+trueD | true density; either detection-weighted (default) or global as specified by the 'true' argument|
+RB | estimated relative bias relative to trueD |
+COV | unadjusted coverage of 95\% interval relative to trueD |
+chatF | mean 'Fletcher-chat' for count \eqn{n_k} (individuals per detector) |
+varration | Ratio var(n) / mean(n) |
+a | mean a-hat effective sampling area |
+SEa | SE of a-hat |
+RBa | RB(a-hat) |
+RSEa | RSE(a-hat) |
+COVa | coverage of 95\% CI for a-hat |
+pCVn | fraction of var(D-hat) attributable to var(n)|
+
 ```{r summaryMCLprint, eval = TRUE}
-summary_MCL(sims1MCL) # LGCP Poisson N(A)
-summary_MCL(sims2MCL) # Thomas Poisson N(A)
-summary_MCL(sims3MCL) # Random habitat Poisson N(A)
+sum1MCL # LGCP Poisson N(A)
+sum2MCL # Thomas Poisson N(A)
+sum3MCL # Random habitat Poisson N(A)
 ```
 
-## Model fitted, conditional likelihood, complete cohesion
+## Complete cohesion
 
 ```{r cohesion2, eval = TRUE}
-summary_MCL(sims2CCL, true = localpar$D)   # Thomas cluster process
-summary_MCL(sims2CfCL, true = localpar$D)  # fixed cluster process
+sum2C    # complete cohesion Poisson N(A)
+sum2Cf   # complete cohesion fixed N(A)
+sum2CCL  # Thomas cluster process
+sum2CfCL # fixed cluster process
 ```
 
 # Finally...
@@ -489,3 +588,4 @@ summary_MCL(sims2CfCL, true = localpar$D)  # fixed cluster process
 unlink(tmpfolder, recursive = TRUE)
 ```
 
+[GitHub]: https://github.com/MurrayEfford/overdispsim

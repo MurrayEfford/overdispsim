@@ -1,21 +1,25 @@
 
 # summarise data simulated without fitting model
 
-summary_n <- function (sims, Evar = NULL) {
+summary_n <- function (sims, binomial = FALSE) {
 	onescenario <- function(x) {
 		n <- x[,1]
 		x[n==0,] <- NA
-		if (is.null(Evar)) {
+		En <- .local$En
+		if (binomial) {
+			Evar <- .local$Evarn
+		}
+		else {
 			Evar <- mean(n, na.rm = TRUE)  # assume Poisson
 		}
 		va    <- var(n, na.rm = TRUE)
-		chatF <- mean(x[,2], na.rm = TRUE)
-		chatW <- if (dim(x)[2]>2) mean(x[,3], na.rm = TRUE) else NA
-		N     <- if (dim(x)[2]>3) mean(x[,4], na.rm = TRUE) else NA
-		varN  <- if (dim(x)[2]>3) var (x[,4], na.rm = TRUE) else NA
-		Nsim      <- sum(!is.na(x[,1]))
-		localD    <- if (dim(x)[2]>4) mean(x[,5], na.rm = TRUE) else NA
-		varlocalD <- if (dim(x)[2]>4) var(x[,5], na.rm = TRUE) else NA
+		chatF <- mean(x[,'chatnk.Fletcher'], na.rm = TRUE)
+		chatW <- mean(x[,'chatnk.Wedderburn'], na.rm = TRUE)
+		N     <- mean(x[,'N'], na.rm = TRUE) 
+		varN  <- var (x[,'N'], na.rm = TRUE)
+		Nsim      <- sum(!is.na(x[,'n']))
+		localD    <- mean(x[,'localD'], na.rm = TRUE)
+		varlocalD <- var(x[,'localD'], na.rm = TRUE)
 		
 		data.frame(
 			varration  = va/Evar, 
@@ -25,10 +29,10 @@ summary_n <- function (sims, Evar = NULL) {
 			N          = N, 
 			varN       = varN, 
 			n          = mean(n, na.rm = TRUE), 
-			varn       = va 
-			# localD     = localD, 
-			# varlocalD  = varlocalD,
-			# VRlocalD   = (varlocalD/localD^2 + 1/En) / (1/En),   # Davalidation
+			varn       = va, 
+			localD     = localD, 
+			varlocalD  = varlocalD,
+			VRlocalD   = (varlocalD/localD^2 + 1/En) / (1/En)   # Davalidation
 			# VRlocalDdjf = (varlocalD/localD^2 + 1/En) / (1/En)  # Davalidation
 		)
 	}

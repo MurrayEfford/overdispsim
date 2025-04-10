@@ -1,4 +1,4 @@
-setlocalparameters <- function (
+setparameters <- function (
 		lambda0 = 0.5,
 		sigma = 1.0,
 		detectfn = 'HHN',
@@ -24,12 +24,29 @@ setlocalparameters <- function (
 	.local$maxncores <- min(parallel::detectCores(), maxncores)
 	
 	# probability of detection at each mask point
-	.local$pd <- secr::pdot(mask, traps, detectfn = detectfn, detectpar = 
-					  	.local$detectpar, noccasions = noccasions)
+	.local$pd <- secr::pdot(
+		mask, 
+		traps, 
+		detectfn = detectfn, 
+		detectpar = .local$detectpar, 
+		noccasions = noccasions)
+	
+	# expected number of individuals detected
+	.local$En <- sum(.local$pd) * attr(mask, 'area') * .local$D
+
 	# expected number of individuals at each detector
-	.local$enk <- secr::Enk(D = .local$D, 
-					  mask, traps, detectfn = detectfn,
-					  detectpar = .local$detectpar, 
-					  noccasions = .local$noccasions)
+	.local$enk <- secr::Enk(
+		D = .local$D, 
+		mask, 
+		traps, 
+		detectfn = detectfn,
+		detectpar = .local$detectpar, 
+		noccasions = .local$noccasions)
+	
+	# expected variance of binomial n
+	a <- sum(.local$pd * attr(mask, 'area'))
+	p <- a / maskarea(mask)
+	.local$Evarn <- p * (1-p) * N
+	
 	invisible(as.list(.local))
 }

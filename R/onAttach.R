@@ -7,5 +7,5 @@
     version <- paste0(packageVersion('overdispsim'), "")
     packageStartupMessage("This is overdispsim ", version,
                            ". For overview type vignette('overdispsim-vignette', 'overdispsim')")
-    setlocalparameters()
+    setparameters()
 }

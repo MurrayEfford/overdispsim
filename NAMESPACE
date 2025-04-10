@@ -7,7 +7,7 @@ importFrom("parallel", "detectCores")
 
 export(extend)
 export(myRF)
-export(setlocalparameters)
+export(setparameters)
 
 export(extract_n)
 export(extract_M)
@@ -21,3 +21,5 @@ export(summary_MCL)
 
 export(sim.cohesion)
 
+export(addCL)
+export(plotnsum)

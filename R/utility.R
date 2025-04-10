@@ -1,4 +1,4 @@
-# see also setlocalparameters()
+# see also setparameters()
 # environment is populated by onAttach()
 .local <- new.env(parent = emptyenv())
 

@@ -1,3 +1,17 @@
+Changes in version 1.0.0 (2025-04-10)
+
+New features or changed behaviour of old functions
+    o   export addCL()
+    o   export plotnsum()
+    o   summary_n() uses En, Evar from .local
+    
+Other
+    o   vignette revised for clarity
+    o   output of summary_n no longer has list structure
+    o   renamed setlocalparameters to setparameters
+    o   removed spurious extdata
+    o   removed data objects (summaries)
+
 Changes in version 0.0.2 (2025-02-16)
 
 New features or changed behaviour of old functions
