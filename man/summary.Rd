@@ -22,7 +22,7 @@ summary_MCL(sims, true = NULL, truea = 0.0635256)
 \arguments{
 
   \item{sims}{output from \code{run}}
-  \item{Evar}{expected variance (should be provided for fixed-N(A))}
+  \item{binomial}{logical; if TRUE then expected variance is .local$Evarn}
   \item{true}{true density}
   \item{truea}{true value of effective sampling area a}
 
