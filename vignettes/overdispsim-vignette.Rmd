@@ -442,13 +442,13 @@ Schlather, M., Malinowski, A., Menck, P. J., Oesting, M., and Strokorb, K. (2015
 This is an aside, intended to show the code in action.
 
 First select a subset of cluster (Thomas process) population scenarios and extract the parameter levels for later use. 
-```{r pops}
+```{r pops, eval = runexamples}
 sapply(popargs2, '[[', 'details')[1:2,]  # display parameter values
 pops <- popargs2[13:18]                  # select mu = 1..32, scale = 2
 ```
 
 And plot an example with mu = 32 and scale = 2:
-```{r pop plot}
+```{r pop plot, eval = runexamples}
 set.seed(12345)
 pop <- do.call(sim.popn, popargs2[[18]])
 plot(pop)                   # AC
