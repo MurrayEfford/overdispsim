@@ -3,10 +3,10 @@ title: '**overdispsim** - Simulations of Overdispersion in SECR'
 author: "Murray Efford"
 date: "`r Sys.Date()`"
 output: 
-  html_document: 
+  pdf_document: 
     toc: yes
     toc_depth: 2
-  pdf_document: 
+  html_document: 
     toc: yes
     toc_depth: 2
 vignette: > 
@@ -59,7 +59,7 @@ Package **zen4R** (Blondel 2024) is required to download simulations from Zenodo
 
 ```{r setup0, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
-options(width = 105) 
+options(width = 90) 
 ```
 
 ```{r setup, warning = FALSE, message = FALSE}
@@ -201,8 +201,8 @@ Each of these takes substantial time to run (hours). They should be run separate
 
 Table 1. Simulations.
 
-| Code | AC distribution | Fit | extractfn | Note |
-|:-----|:-----------|:-----------|:-----------|:-----------------|
+| Code | AC distribution | Fit | extractfn |
+|:-----|:-----------|:-----------|:-----------|
 1 | LGCP | none | extract_n |
 2 | Thomas process | none |extract_n |
 3 | random habitat | none |extract_n |
@@ -384,8 +384,8 @@ Additional simulations were performed with overdispersion in the *detection* pro
 
 Table 2. Simulations with complete within-cluster cohesion.
 
-| Code | AC distribution | Fit | extractfn | Note |
-|:-----|:-----------|:-----------|:-----------|:-----------------|
+| Code | AC distribution | Fit | extractfn | 
+|:-----|:-----------|:-----------|:-----------|
 2C   | Thomas process | none | extract_n |
 2Cf  | fixed cluster process | none | extract_n |
 2CCL | Thomas process | conditional likelihood | extract_M |
@@ -482,8 +482,8 @@ summary_M(simsM)
 |:-------------|:------------------------------------------------|	
 [var, scale etc.] | Parameters specific to the scenarios |
 varration | Ratio var(n) / mean(n) |
-chatF | Mean 'Fletcher-chat' for count \eqn{n_k} (individuals per detector) |
-chatW | Mean 'Wedderburn-chat' for count \eqn{n_k} (individuals per detector) |
+chatF | Mean 'Fletcher-chat' for count $n_k$ (individuals per detector) |
+chatW | Mean 'Wedderburn-chat' for count $n_k$ (individuals per detector) |
 Nsim | number of datasets simulated |
 N | mean number of individuals in simulated population |
 varN | variance of number of individuals in simulated population |
@@ -519,7 +519,7 @@ RB | estimated relative bias relative to trueD |
 seRB | SE of RB |
 COV | unadjusted coverage of 95\% interval relative to trueD |
 COVF | adjusted coverage |
-chatF | mean 'Fletcher-chat' for count \eqn{n_k} (individuals per detector) |
+chatF | mean 'Fletcher-chat' for count $n_k$ (individuals per detector) |
 varration | Ratio var(n) / mean(n) |
 
 Summarise relative to local density --
@@ -557,7 +557,7 @@ RSE | ratio of preceding |
 trueD | true density; either detection-weighted (default) or global as specified by the 'true' argument|
 RB | estimated relative bias relative to trueD |
 COV | unadjusted coverage of 95\% interval relative to trueD |
-chatF | mean 'Fletcher-chat' for count \eqn{n_k} (individuals per detector) |
+chatF | mean 'Fletcher-chat' for count $n_k$ (individuals per detector) |
 varration | Ratio var(n) / mean(n) |
 a | mean a-hat effective sampling area |
 SEa | SE of a-hat |
