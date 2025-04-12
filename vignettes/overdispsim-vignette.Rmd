@@ -3,10 +3,10 @@ title: '**overdispsim** - Simulations of Overdispersion in SECR'
 author: "Murray Efford"
 date: "`r Sys.Date()`"
 output: 
-  pdf_document: 
+  html_document: 
     toc: yes
     toc_depth: 2
-  html_document: 
+  pdf_document: 
     toc: yes
     toc_depth: 2
 vignette: > 
@@ -43,7 +43,7 @@ identified by the suffix 'f'. Thus there are 6 distinct processes
 (1, 2, 3, 1f, 2f, 3f). Each process is simulated over a range of parameter values.
 
 This vignette provides both the code to run the simulations, given the R package **overdispsim**, and tables summarising the resulting simulations. Simulations are re-run if the variable 'runsimulations' is set to TRUE; 
-otherwise, summaries are based on previous simulations downloaded from Zenodo (Efford 2025c) or possibly a local directory..
+otherwise, summaries are based on previous simulations downloaded from Zenodo (Efford 2025c) or possibly a local directory.
 
 # Dependence on other packages
 
