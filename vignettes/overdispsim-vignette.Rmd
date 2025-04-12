@@ -3,10 +3,10 @@ title: '**overdispsim** - Simulations of Overdispersion in SECR'
 author: "Murray Efford"
 date: "`r Sys.Date()`"
 output: 
-  html_document: 
+  pdf_document: 
     toc: yes
     toc_depth: 2
-  pdf_document: 
+  html_document: 
     toc: yes
     toc_depth: 2
 vignette: > 
@@ -70,7 +70,7 @@ runexamples    <- FALSE
 nrepl_n        <- 0 # 10000     zero causes load from localrepo or zenodoDOI    
 nrepl_M        <- 0 # 1000
 csvdir         <- NULL        # folder to save summaries as csv
-zenodoDOI      <- "10.5281/zenodo.14873669" # optionally retrieve all simulations
+zenodoDOI      <- "10.5281/zenodo.15200381" # optionally retrieve all simulations
 localrepo      <- ""
 ```
 
