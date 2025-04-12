@@ -15,13 +15,23 @@ The package may be installed in R using
 devtools::install_github("MurrayEfford/overdispsim",  build_vignettes = TRUE)
 ```
 
-This takes some time to run, as it rebuilds the vignette.
+(this takes some time to run, as it rebuilds the vignette)
+
+or
+ 
+```
+install.packages("overdispsim", repos = "https://MurrayEfford.r-universe.dev")
+```
+
+(faster as binaries are pre-built).
 
 The vignette may be viewed by installing the package and typing 
 
 ```
 vignette('overdispsim-vignette', 'overdispsim')
 ```
+
+or by downloading from Zenodo.
 
 ### References
 
