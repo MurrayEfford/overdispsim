@@ -31,7 +31,7 @@ The vignette may be viewed by installing the package and typing
 vignette('overdispsim-vignette', 'overdispsim')
 ```
 
-or by downloading from Zenodo.
+or by downloading from Zenodo https://doi.org/10.5281/zenodo.14873669.
 
 ### References
 
