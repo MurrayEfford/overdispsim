@@ -18,7 +18,7 @@ vignette: >
 # Introduction
 
 This vignette explains some of the functions in the package **overdispsim** and 
-provides code for simulations in the paper of Efford and Fletcher (2024). 
+provides code for simulations in the paper of Efford and Fletcher (2024 and later versions). 
 **overdispsim** uses the R packages **secr** (Efford 2025a) and 
 **secrdesign** (Efford 2025b) available from the CRAN repository. **overdispsim** itself is available on [GitHub] and Zenodo. 
 
@@ -28,7 +28,7 @@ specifically the maximum-likelihood estimates of population density provided by
 R package **secr**.
 
 The scenarios considered are a superset of those reported by Efford and Fletcher (2024). 
-To reproduce the specific results in Efford and Fletcher (2024) see the file 'Figures.R'.
+To reproduce the specific results in Efford and Fletcher (2024) see the file 'Figures.R' on Zenodo.
 
 Three base processes are simulated for the distribution of AC:
 
@@ -49,7 +49,7 @@ otherwise, summaries are based on previous simulations downloaded from Zenodo (E
 
 Packages **secr** and **secrdesign** are used throughout for simulation and model fitting.
 
-Functions `rLGCP` and `rThomas` from the **spatstat** package (Baddeley et al. 2015) are used where possible. The algorithm for `rLGCP` in **spatstat.random** changed in version 3.2.1 (Oct 2023) to avoid dependence on **RandomFields**. Some simulations here were run with the earlier code and may differ (see warning in `?spatstat.random::rLGCP`). Conditional simulations with `rLGCP` and `rThomas` require spatstat.random version >= 3.3.3.12 and secr version >= 5.2.2. These versions may be installed from R-universe if they are not yet on CRAN.
+Functions `rLGCP` and `rThomas` from the **spatstat** package (Baddeley et al. 2015) are used where possible. The algorithm for `rLGCP` in **spatstat.random** changed in version 3.2.1 (Oct 2023) to avoid dependence on **RandomFields** (Schlather et al. 2015). Some simulations here were run with the earlier code and may differ (see warning in `?spatstat.random::rLGCP`). Conditional simulations with `rLGCP` and `rThomas` require spatstat.random version >= 3.3.3.12 and secr version >= 5.2.2. These versions may be installed from R-universe if they are not yet on CRAN.
 
 Package **zen4R** (Blondel 2024) is required to download simulations from Zenodo.
 
@@ -168,7 +168,7 @@ fix <- function(x) {
 # 1f. Conditional LGCP requires spatstat.random >= v3.3.3.2 and secr >= 5.2.2
 popargs1f <- lapply(popargs1, fix)
 
-# 2f. Conditional Thomas process
+# 2f. Conditional Thomas process requires spatstat.random >= v3.3.3.12 and secr >= 5.2.2
 popargs2f <- lapply(popargs2, fix)
 # cf Bischof et al. fixed clusters (clone = "constant", scale = 0)
 
@@ -421,7 +421,7 @@ Efford, M. G. (2025b) openCR: Spatially explicit capture--recapture models. R pa
 
 Efford, M. G. (2025c) Simulations of overdispersed activity centres in spatially explicit capture-recapture [Data set]. Zenodo. https://doi.org/10.5281/zenodo.14873669
 
-Efford, M. G. and Fletcher, D. (2024)  The effect of spatial overdispersion on confidence intervals for population density estimated by spatially explicit capture--recapture. bioRxiv https://doi.org/10.1101/2024.03.12.584742.
+Efford, M. G. and Fletcher, D. (2024)  The effect of spatial overdispersion on confidence intervals for population density estimated by spatially explicit capture--recapture. *bioRxiv* https://doi.org/10.1101/2024.03.12.584742.
 
 Saura, S., and Martínez-Millán, J. (2000) Landscape patterns simulation with a modified random clusters method. *Landscape Ecology* **15**, 661--678.
 
