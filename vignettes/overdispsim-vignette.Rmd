@@ -49,9 +49,7 @@ otherwise, summaries are based on previous simulations downloaded from Zenodo (E
 
 Packages **secr** and **secrdesign** are used throughout for simulation and model fitting.
 
-Functions `rLGCP` and `rThomas` from the **spatstat** package (Baddeley et al. 2015) are used where possible. The algorithm for `rLGCP` in **spatstat.random** changed in version 3.2.1 (Oct 2023) to avoid dependence on **RandomFields**. Some simulations here were run with the earlier code and may differ (see warning in `?spatstat.random::rLGCP`). Conditional simulations with `rLGCP` require spatstat.random version >= 3.3.3.2 and secr version >= 5.2.2. These versions may be installed from R-universe if they are not yet on CRAN.
-
-The fixed cluster process of Bischof et al. (2020) was emulated using the **secr** function `sim.popn` with settings model2D = "cluster" and details$clone = "constant" (see below).
+Functions `rLGCP` and `rThomas` from the **spatstat** package (Baddeley et al. 2015) are used where possible. The algorithm for `rLGCP` in **spatstat.random** changed in version 3.2.1 (Oct 2023) to avoid dependence on **RandomFields**. Some simulations here were run with the earlier code and may differ (see warning in `?spatstat.random::rLGCP`). Conditional simulations with `rLGCP` and `rThomas` require spatstat.random version >= 3.3.3.12 and secr version >= 5.2.2. These versions may be installed from R-universe if they are not yet on CRAN.
 
 Package **zen4R** (Blondel 2024) is required to download simulations from Zenodo.
 
@@ -70,7 +68,7 @@ runexamples    <- FALSE
 nrepl_n        <- 0 # 10000     zero causes load from localrepo or zenodoDOI    
 nrepl_M        <- 0 # 1000
 csvdir         <- NULL        # folder to save summaries as csv
-zenodoDOI      <- "10.5281/zenodo.15200381" # optionally retrieve all simulations
+zenodoDOI      <- "10.5281/zenodo.15455288" # optionally retrieve all simulations
 localrepo      <- ""
 ```
 
@@ -118,14 +116,16 @@ to the **secr** function 'sim.popn' to simulate realisations of the distribution
 ## Unconditional (Poisson N(A))
 
 ```{r definepop}
+eps <- spacing(localpar$mask)
+
 # 1. LGCP
 basepopargs1 <- list(
 	D       = localpar$D, 
 	core    = localpar$mask,
-	buffer  = 0,    # uses bounding box of mask
+	buffer  = eps/2,
 	model2D = "rLGCP",
 	details = list(var = 0, scale = 5 * localpar$sigma, 
-				   eps = spacing(localpar$mask), saveLambda = TRUE))
+				   eps = eps, saveLambda = TRUE))
 popargs1 <- extend(basepopargs1, 
 				   values = list(var = Vlevels, scale = c(2,5,10) * localpar$sigma))
 t(sapply(popargs1, '[[', 'details'))
@@ -134,10 +134,9 @@ t(sapply(popargs1, '[[', 'details'))
 basepopargs2 <- list(
 	D       = localpar$D, 
 	core    = localpar$mask,
-	buffer  = spacing(localpar$mask)/2,
+	buffer  = eps/2,
 	model2D = "rThomas",
-	details = list(mu = 1, scale = localpar$sigma, eps = 
-				   	spacing(localpar$mask), saveLambda = TRUE))
+	details = list(mu = 1, scale = localpar$sigma, eps = eps, saveLambda = TRUE))
 # rThomas requires scale>0, so use tiny value instead 1e-4
 popargs2 <- extend(basepopargs2, 
 				   values = list(mu = mulevels, scale = c(1e-4, 1, 2, 4)*localpar$sigma))
@@ -159,28 +158,19 @@ t(sapply(popargs3, '[[', 'details'))
 
 Modify each of the preceding scenarios by telling `sim.popn` to use fixed N.
 
-```{r fixfn}
+```{r definepopfixed}
 fix <- function(x) {
 	x$Ndist <- "fixed"
 	x$Nbuffer <- localpar$N
-	if (x$model2D == 'rThomas') {
-		x$model2D <- 'cluster'
-		x$details$clone <- 'constant'
-	}
 	x
 }
-```
-
-```{r definepopfixed}
 
 # 1f. Conditional LGCP requires spatstat.random >= v3.3.3.2 and secr >= 5.2.2
 popargs1f <- lapply(popargs1, fix)
 
-# 2f. Clusters (constant size)
-# no algorithm for fixed-N rThomas, so use this
+# 2f. Conditional Thomas process
 popargs2f <- lapply(popargs2, fix)
 # cf Bischof et al. fixed clusters (clone = "constant", scale = 0)
-# but allows varying scale
 
 # 3f. random habitat, fixed-N
 popargs3f <- lapply(popargs3, fix)
@@ -207,13 +197,13 @@ Table 1. Simulations.
 2 | Thomas process | none |extract_n |
 3 | random habitat | none |extract_n |
 1f | fixed-N(A) LGCP | none |extract_n |
-2f | fixed cluster process | none |extract_n |
+2f | fixed-N(A) Thomas process | none |extract_n |
 3f | fixed-N(A) random habitat | none |extract_n |
 1M | LGCP | full likelihood | extract_M |
 2M | Thomas process | full likelihood |  extract_M |
 3M | random habitat | full likelihood | extract_M |
 1fM | fixed-N(A) LGCP | full likelihood | extract_M |
-2fM | fixed cluster process | full likelihood | extract_M |
+2fM | fixed-N(A) Thomas process | full likelihood | extract_M |
 3fM | fixed-N(A) random habitat | full likelihood | extract_M |
 1MCL | LGCP | conditional likelihood | extract_MCL |
 2MCL | Thomas process | conditional likelihood |  extract_MCL |
@@ -387,9 +377,9 @@ Table 2. Simulations with complete within-cluster cohesion.
 | Code | AC distribution | Fit | extractfn | 
 |:-----|:-----------|:-----------|:-----------|
 2C   | Thomas process | none | extract_n |
-2Cf  | fixed cluster process | none | extract_n |
+2Cf  | fixed-N(A) Thomas process | none | extract_n |
 2CCL | Thomas process | conditional likelihood | extract_M |
-2CfCL| fixed cluster process | conditional likelihood | extract_M |
+2CfCL| fixed-N(A) Thomas process | conditional likelihood | extract_M |
 
 ```{r cohesion, eval = runsimulations, warning = FALSE, message = FALSE}
 detargs <- list (savepopn = TRUE, gamma = 1)  # complete cohesion
@@ -499,7 +489,7 @@ sum2 # Thomas Poisson N(A)
 sum3 # Random habitat Poisson N(A)
 
 sum1f # LGCP fixed N(A)
-sum2f # Fixed cluster process
+sum2f # Thomas process fixed N(A)
 sum3f # Random habitat fixed N(A)
 ```
 
@@ -529,7 +519,7 @@ sum2M # Thomas Poisson N(A)
 sum3M # Random habitat Poisson N(A)
 
 sum1fM # LGCP fixed N(A)
-sum2fM # Fixed cluster process
+sum2fM # Thomas fixed N(A)
 sum3fM # Random habitat fixed N(A)
 ```
 
@@ -574,17 +564,19 @@ sum3MCL # Random habitat Poisson N(A)
 
 ## Complete cohesion
 
+Thomas cluster process
+
 ```{r cohesion2, eval = TRUE}
-sum2C    # complete cohesion Poisson N(A)
-sum2Cf   # complete cohesion fixed N(A)
-sum2CCL  # Thomas cluster process
-sum2CfCL # fixed cluster process
+sum2C    # Poisson N(A)
+sum2Cf   # fixed N(A)
+sum2CCL  # Poisson N(A), model fitted by maximising conditional likelihood
+sum2CfCL # fixed N(A), model fitted by maximising conditional likelihood
 ```
 
 # Finally...
 
 ```{r cleanup, eval = !runsimulations}
-# appears to fail when knitting to pdf
+# appears to fail when knitting to pdf, so suppress in that case
 unlink(tmpfolder, recursive = TRUE)
 ```
 
