@@ -1,7 +1,7 @@
 Package: overdispsim
 Type: Package
 Title: Simulations of Overdispersion in SECR
-Version: 1.0.1
+Version: 1.0.2
 Date: 2025-05-19
 Description: Code used to simulate overdispersion for paper by Efford and Fletcher.
 Authors@R: c(person("Murray", "Efford", 
